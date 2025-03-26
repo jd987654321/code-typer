@@ -12,6 +12,8 @@ export default tseslint.config(
       ...tseslint.configs.recommended,
       "eslint:recommended",
       "plugin:react/recommended",
+      "plugin:@typescript-eslint/reccomended",
+      "plugin:react-hooks/recommended",
       "plugin:prettier/recommended",
     ],
     files: ["**/*.{ts,tsx}"],
