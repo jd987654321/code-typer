@@ -1,6 +1,7 @@
-import { useState, ReactElement } from "react";
+import { useState, useRef, useEffect, ReactElement } from "react";
 
 export default function TypingSection(): ReactElement {
+  const inputRef = useRef<HTMLInputElement>(null);
   type textStatus = "grey" | "green" | "red";
 
   let keyPressed: string = "";
@@ -14,6 +15,14 @@ export default function TypingSection(): ReactElement {
   const [userText, setUserText] = useState("");
   const [textStates, setTextStates] = useState(textArr.map((text) => false));
 
+  useEffect(() => {
+    const focusText = () => {
+      inputRef.current?.focus();
+    };
+
+    document.addEventListener("keydown", focusText);
+    return () => document.removeEventListener("keydown", focusText);
+  });
   //console.log(state);
 
   /**
@@ -43,7 +52,7 @@ export default function TypingSection(): ReactElement {
 
   return (
     <div className="w-[90%]">
-      <p className={`bg-none block text-[32px] select-none`}>
+      <p className={`bg-none block text-[32px] select-none font-arial`}>
         {textArr.map((text, wordIndex) => (
           <span
             className={`${textStates[wordIndex] ? "text-white" : "text-black"}`}
@@ -65,21 +74,15 @@ export default function TypingSection(): ReactElement {
         ))}
       </p>
 
-      <textarea
-        className="text-black block w-full h-52 border-black border-2"
-        rows={1}
+      <input
+        type="text"
+        ref={inputRef}
+        autoFocus={true}
+        className="text-black block w-full h-52 border-black border-2 pointer-events-none absolute z-[-1] "
         value={userText}
         onChange={(e) => {
-          //console.log(e.target.value.length);
-
-          //console.log(textStates);
-          //console.log("textArr[word]: " + textArr[word]);
-          //console.log("e.target.value: " + e.target.value);
-
           setUserText(e.target.value);
-          //console.log(keyPressed);
-          //console.log(JSON.stringify(e.target.value));
-          //console.log(JSON.stringify(e.target.value.trim()));
+
           if (keyPressed === " " && textArr[word] === e.target.value.trim()) {
             console.log("same");
             setTextStates((textStates) =>
@@ -90,15 +93,9 @@ export default function TypingSection(): ReactElement {
             setWord((word) => word + 1);
             setUserText("");
           }
-          console.log(word);
         }}
         onKeyDown={(e) => {
           keyPressed = e.key;
-          if (e.key === "Enter") {
-            console.log("entered");
-          }
-          if (e.key === "Space") {
-          }
         }}
       />
     </div>
