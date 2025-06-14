@@ -1,7 +1,21 @@
 import { useState, useRef, useEffect, ReactElement } from "react";
 import refreshButton from "../../assets/refresh.png";
 
-export default function TypingSection(): ReactElement {
+type Props = {
+  ResetTimer: () => void;
+  StartTimer: () => void;
+  isActive: boolean;
+  canType: boolean;
+  setCanType: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export default function TypingSection({
+  isActive,
+  ResetTimer,
+  StartTimer,
+  canType,
+  setCanType,
+}: Props): ReactElement {
   const inputRef = useRef<HTMLInputElement>(null);
 
   let keyPressed: string = "";
@@ -20,7 +34,14 @@ export default function TypingSection(): ReactElement {
       console.log("focusing");
     };
 
+    const startTimer = () => {
+      if (!isActive) {
+        StartTimer();
+      }
+    };
+
     document.addEventListener("keydown", focusText);
+    document.addEventListener("keydown", startTimer);
     return () => document.removeEventListener("keydown", focusText);
   });
   //console.log(state);
@@ -65,18 +86,23 @@ export default function TypingSection(): ReactElement {
           className="text-black block w-full h-52 border-black border-2 pointer-events-none fixed z-[-1]"
           value={userText}
           onChange={(e) => {
-            console.log(e.target.value);
-            setUserText(e.target.value);
+            if (canType) {
+              console.log(e.target.value);
+              setUserText(e.target.value);
 
-            if (keyPressed === " " && textArr[word] === e.target.value.trim()) {
-              console.log("same");
-              setTextStates((textStates) =>
-                textStates.map((item, index) =>
-                  index === word ? true : textStates[index]
-                )
-              );
-              setWord((word) => word + 1);
-              setUserText("");
+              if (
+                keyPressed === " " &&
+                textArr[word] === e.target.value.trim()
+              ) {
+                console.log("same");
+                setTextStates((textStates) =>
+                  textStates.map((item, index) =>
+                    index === word ? true : textStates[index]
+                  )
+                );
+                setWord((word) => word + 1);
+                setUserText("");
+              }
             }
           }}
           onKeyDown={(e) => {
@@ -86,6 +112,8 @@ export default function TypingSection(): ReactElement {
       </div>
       <button
         onClick={() => {
+          ResetTimer();
+
           setWord(0);
           setUserText("");
           setTextStates(textStates.map((text) => false));
