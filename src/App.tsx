@@ -9,6 +9,7 @@ import Main from "./pages/Main";
 import AccountPage from "./pages/account/AccountPage";
 import TypingPage from "./pages/typing/TypingPage";
 import TypingSection from "./pages/typing/TypingSection";
+import LoginPage from "./pages/login/LoginPage";
 
 import "./index.css";
 
@@ -25,6 +26,7 @@ export default function App(): ReactElement {
             <Route path="/" element={<Main />} />
             <Route path="/type" element={<TypingPage />} />
             <Route path="/account" element={<AccountPage />} />
+            <Route path="login" element={<LoginPage />} />
           </Routes>
         </div>
       </BrowserRouter>

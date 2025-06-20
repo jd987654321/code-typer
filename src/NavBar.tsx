@@ -40,7 +40,7 @@ export default function NavBar(): ReactElement {
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
-              <Link to="/account" className={navigationMenuTriggerStyle()}>
+              <Link to="/login" className={navigationMenuTriggerStyle()}>
                 Login
               </Link>
             </NavigationMenuLink>
