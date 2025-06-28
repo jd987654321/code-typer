@@ -5,13 +5,26 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@tremor/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       fontFamily: {
         arial: ["Arial", "sans-serif"],
+        vscodeTitle: ["microsoft-sans-serif", "sans-serif"],
+        vscodeText: ["Menlo", "sans-serif"],
       },
       colors: {
+        vscode: {
+          primary: "#181818",
+          secondary: "#242424",
+          outline1: "#2B2B2B",
+          outline2: "#454545",
+          text: {
+            bright: "#FFFFFF",
+            dull: "#808080",
+          },
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

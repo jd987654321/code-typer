@@ -14,7 +14,7 @@ import { ReactElement } from "react";
 
 export default function NavBar(): ReactElement {
   return (
-    <div className="w-full bg-red-500">
+    <div className="w-full bg-vscode-primary">
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>

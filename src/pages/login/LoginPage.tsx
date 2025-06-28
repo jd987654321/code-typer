@@ -9,11 +9,11 @@ export default function LoginPage(): ReactElement {
   // sign up page
   // forget password section
   // sign in with google and github
-  const names: string[] = animalNames.trim().split("\n");
-  const adj: string[] = adjectives.trim().split("\n");
+  //   const names: string[] = animalNames.trim().split("\n");
+  //   const adj: string[] = adjectives.trim().split("\n");
 
-  console.log(names.length);
-  console.log(adj.length);
+  //   console.log(names.length);
+  //   console.log(adj.length);
   const avatars: string[] = [
     "Vim user",
     "Java Old Timer",
@@ -37,25 +37,6 @@ export default function LoginPage(): ReactElement {
   useEffect(() => {
     fetchSession();
   });
-  const createUniqueUsername = (): string => {
-    let 
-    let isNameValid = false;
-
-    while (isNameValid) {
-      const randomName: string = names[Math.floor(Math.random() * 200)];
-      const randomAdj: string = adj[Math.floor(Math.random() * 200)];
-      const randomNum: number = Math.floor(Math.random() * 1000) + 1;
-      const response = await fetch("/api/checkUsernameAvailibility", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify
-      })
-    }
-
-    return randomAdj + randomName + randomNum;
-  };
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -73,30 +54,31 @@ export default function LoginPage(): ReactElement {
   };
 
   const handleSignUp = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    //if signup doesnt work, because user alreadys exists, cut the function off early
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-
     const email: string = form.get("email") as string;
     const password: string = form.get("password") as string;
-    const uniqueAvatar: string = avatars[Math.floor(Math.random() * 6)];
-    const uniqueUser: string = createUniqueUsername();
-    const currentDate: Date = new Date();
 
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
     });
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    // const uniqueAvatar: string = avatars[Math.floor(Math.random() * 6)];
+    // const uniqueUser: string = createUniqueUsername();
+    // const currentDate: Date = new Date();
 
-    const { error: queryError } = await supabase.from("user_profiles").insert({
-      id: userData.user!.id,
-      avatar: uniqueAvatar,
-      username: uniqueUser,
-      created_at: currentDate.toISOString(),
-    });
+    // const { data: userData, error: userError } = await supabase.auth.getUser();
 
-    console.log(data + " " + error);
+    // const { error: queryError } = await supabase.from("user_profiles").insert({
+    //   id: userData.user!.id,
+    //   avatar: uniqueAvatar,
+    //   username: uniqueUser,
+    //   created_at: currentDate.toISOString(),
+    // });
+
+    console.log(data.user + " " + error);
   };
 
   const handleSignOut = async (): Promise<void> => {
@@ -151,7 +133,7 @@ export default function LoginPage(): ReactElement {
         Sign Out
       </button>
       <button className="border-2 border-black">Delete Account</button>
-      <p>{createUniqueUsername()}</p>
+      <p>{}</p>
       <p>{avatars[Math.floor(Math.random() * 6)]}</p>
     </>
   );

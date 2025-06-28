@@ -11,6 +11,7 @@ export default function TypingPage(): ReactElement {
   const { persistentTimerVal, setPersistentTimerVal } = useTimerContext();
   const [timerVal, setTimerVal] = useState(persistentTimerVal);
   const [isActive, setIsActive] = useState(false);
+  const [textStates, setTextStates] = useState<boolean[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -92,6 +93,8 @@ export default function TypingPage(): ReactElement {
       </div>
       {canType ? (
         <TypingSection
+          textStates={textStates}
+          setTextStates={setTextStates}
           isActive={isActive}
           ResetTimer={ResetTimer}
           StartTimer={StartTimer}
@@ -99,7 +102,7 @@ export default function TypingPage(): ReactElement {
           setCanType={setCanType}
         />
       ) : (
-        <FinishedSection />
+        <FinishedSection recordedSpeed={textStates} />
       )}
     </>
   );

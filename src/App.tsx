@@ -2,6 +2,7 @@ import { useState, ReactElement, createContext, useContext } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./NavBar";
 import { Button } from "./components/ui/button";
+import Sidebar from "./components/my_own/Sidebar";
 
 import { TimerContext } from "./context/TimerContext";
 
@@ -12,6 +13,7 @@ import TypingSection from "./pages/typing/TypingSection";
 import LoginPage from "./pages/login/LoginPage";
 
 import "./index.css";
+import "./assets/fonts/fonts.css";
 
 export default function App(): ReactElement {
   const [persistentTimerVal, setPersistentTimerVal] = useState(30);
@@ -20,14 +22,20 @@ export default function App(): ReactElement {
       value={{ persistentTimerVal, setPersistentTimerVal }}
     >
       <BrowserRouter>
-        <div className="bg-gray-400 h-screen">
-          <NavBar></NavBar>
+        <div className="text-white bg-vscode-primary border-2 border-vscode-outline1 h-12 w-screen flex justify-center items-center">
+          <div className="h-9 w-1/2 bg-vscode-secondary border-2 border-vscode-outline1 rounded-lg flex justify-center items-center">
+            <p>Typing Some Code</p>
+          </div>
+        </div>
+        <div className="bg-vscode-primary h-screen">
+          <Sidebar />
+          {/* <NavBar></NavBar>
           <Routes>
             <Route path="/" element={<Main />} />
             <Route path="/type" element={<TypingPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="login" element={<LoginPage />} />
-          </Routes>
+          </Routes> */}
         </div>
       </BrowserRouter>
     </TimerContext.Provider>
