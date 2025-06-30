@@ -70,7 +70,7 @@ export default function Sidebar(): ReactElement {
   type YesOrNo = (typeof yesOrNo)[number];
   type ProblemTypes = (typeof problemTypes)[number];
 
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [time, setTime] = useState<number>(15);
   const [language, setLanguage] = useState<Languages>("Any");
   const [style, setStyle] = useState<Styles>("App Code");
@@ -115,13 +115,13 @@ export default function Sidebar(): ReactElement {
         onMouseLeave={() => {
           if (!isAnyMenuOpen()) {
             setIsOpen(false);
-            console.log("mouse left");
+            //console.log("mouse left");
           }
         }}
         onMouseEnter={() => {
           if (!isAnyMenuOpen()) {
             setIsOpen(true);
-            console.log("mouse entered");
+            //console.log("mouse entered");
           }
         }}
         className={`text-vscode-text-bright h-full ${isOpen ? "w-96" : "w-24"} border-x-2 border-vscode-outline1 bg-vscode-primary transition-all duration-500`}
@@ -189,7 +189,7 @@ export default function Sidebar(): ReactElement {
               currentOption={style}
               setCurrentOption={setStyle}
               menuOpen={styleOpen}
-              setMenuOpen={setLangOpen}
+              setMenuOpen={setStyleOpen}
             />
             {/* just need to conditionally render these based on which option  */}
             {style === "App Code" ? (

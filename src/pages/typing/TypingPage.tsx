@@ -67,7 +67,7 @@ export default function TypingPage(): ReactElement {
 
   return (
     <>
-      <div>
+      <div className="text-white">
         <h1>Timer</h1>
         <p>{timerVal}</p>
         <div className="w-60 h-20 border-black border-2 ">
@@ -76,13 +76,22 @@ export default function TypingPage(): ReactElement {
           ) : (
             <>
               <p>set the timer to</p>
-              <button className="bg-white mx-2" onClick={() => ChangeTimer(10)}>
+              <button
+                className="border-vscode-outline1 border-2 mx-2"
+                onClick={() => ChangeTimer(10)}
+              >
                 10
               </button>
-              <button className="bg-white mx-2" onClick={() => ChangeTimer(30)}>
+              <button
+                className="border-vscode-outline1 border-2 mx-2"
+                onClick={() => ChangeTimer(30)}
+              >
                 30
               </button>
-              <button className="bg-white mx-2" onClick={() => ChangeTimer(60)}>
+              <button
+                className="border-vscode-outline1 border-2 mx-2"
+                onClick={() => ChangeTimer(60)}
+              >
                 60
               </button>
             </>

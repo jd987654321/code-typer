@@ -27,8 +27,9 @@
  * INTEGRATING SHIKI WITH OUR CUSTOM RENDERING NOTES
  *
  * so shiki creates the html blocks that we then insert, we can also try custom rendering where we render it ourselves
- * I think we grab what we need from shiki, but manually render the last word,
- *
+ * I think we grab what we need from shiki, but manually render the last word, maybe split the text string into two
+ * the one with highlighting, and the stuff without highlighting, we are pretty much rerendering a majority of the text each time someone types anything
+ *if this is too slow then we can optimize by choosing what part of the text we render
  */
 
 import { useState, useRef, useEffect, ReactElement } from "react";
@@ -63,7 +64,9 @@ export default function TypingSection({
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
   const typeText: string = "int x = 7;\nfor(int i = 0 ; i < x ; i++){";
 
-  const textArr: string[] = typeText.split(" ");
+  //const textArr: string[] = typeText.split(" ");
+  const textArr: string[] = typeText.split(/[\n\s]+/);
+  //console.log(textArr);
 
   const [word, setWord] = useState<number>(0);
   const [userText, setUserText] = useState("");
@@ -87,7 +90,7 @@ export default function TypingSection({
       }
     );
 
-    console.log(lightedText);
+    //console.log(lightedText);
 
     setTextShiki(lightedText);
   };
@@ -142,8 +145,11 @@ export default function TypingSection({
 
   return (
     <>
-      <div className="w-[90%] border-black border-2">
-        <div dangerouslySetInnerHTML={{ __html: testShiki }}></div>
+      <div className="w-[90%] border-black border-2 bg-green-950">
+        <div
+          className="text-sm"
+          dangerouslySetInnerHTML={{ __html: testShiki }}
+        ></div>
         <p className={`bg-none block text-[32px] select-none font-arial`}>
           {textArr.map((text, wordIndex) => (
             <span
