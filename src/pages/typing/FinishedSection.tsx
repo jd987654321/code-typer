@@ -9,7 +9,7 @@ export default function FinishedSection({
 }: Props): ReactElement {
   console.log(recordedSpeed);
   return (
-    <div>
+    <div className="text-white">
       <p>Nice job ur done now :D</p>
       <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>
     </div>

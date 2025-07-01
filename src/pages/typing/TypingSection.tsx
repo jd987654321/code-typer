@@ -32,7 +32,7 @@
  *if this is too slow then we can optimize by choosing what part of the text we render
  */
 
-import { useState, useRef, useEffect, ReactElement } from "react";
+import { useState, useRef, useEffect, ReactElement, useMemo } from "react";
 import refreshButton from "../../assets/refresh.png";
 import highlighter from "@/lib/highlighter";
 import parse, { domToReact, Element, DOMNode, Text } from "html-react-parser";
@@ -66,30 +66,51 @@ export default function TypingSection({
   const typeText: string = "int x = 7;\nfor(int i = 0 ; i < x ; i++){";
 
   const typeText3: string =
-    'import { ReactElement } from "react";\n\ntype Props = {\n  recordedSpeed: boolean[];\n};\n\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n';
+    'import { ReactElement } from "react";\n\ntype Props = {\n  recordedSpeed: boolean[];\n};\n\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  const [hok, setHok] = useState<number>(0);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n';
 
   //const textArr: string[] = typeText.split(" ");
   const textArr: string[] = typeText.split(/[\n\s]+/);
   //console.log(textArr);
 
-  const [word, setWord] = useState<number>(0);
+  const [word, setWord] = useState<number>(10);
   const [userText, setUserText] = useState("");
 
   const [testShiki, setTextShiki] = useState<string>("");
   //const [textStates, setTextStates] = useState(textArr.map((text) => false));
+  let hlText = highlighter.codeToHtml(typeText3, {
+    theme: "dark-plus",
+    lang: "jsx",
+  });
 
-  useEffect(() => {
-    //we are going to make a string, then assign it to a variable or hook
-    // let lightedText = highlighter.codeToHtml(typeText3, {
-    //   theme: "dark-plus",
-    //   lang: "jsx",
-    // });
-    // setTextShiki(lightedText);
-    // setTextStates(textArr.map((text) => false));
+  //console.log(hlText);
+
+  const textArr2: string[] = useMemo(() => {
+    let arr: string[] = [];
+    /**
+     * an html element such as <div>some text</div> actually counts as two nodes, since the text
+     * is actually a text node, and this text node counts as a child node of the <div></div> node
+     * So when checking the number of children each non-nested node should have, its's actually one, not zero
+     * Non-nested nodes also are spans and have styling, this excludes the first <pre> element which has styling
+     * and it also excludes the span containers that dont have any styling
+     */
+    parse(hlText, {
+      replace: (node) => {
+        if (
+          node instanceof Element &&
+          node.attribs &&
+          node.children?.length === 1 &&
+          node.name === "span" &&
+          node.attribs?.style
+        ) {
+          //console.log(node.name);
+          let text: string[] = getTextFromNode(node).trim().split(/\s+/);
+          text.forEach((item) => arr.push(item));
+          return node;
+        }
+      },
+    });
+    return arr;
   }, []);
-
-  // console.log("user text is: " + userText);
-  // console.log("text states is: " + textStates);
 
   useEffect(() => {
     const focusText = () => {
@@ -146,10 +167,6 @@ export default function TypingSection({
   //     }
   //   },
   // });
-  let hlText = highlighter.codeToHtml(typeText3, {
-    theme: "dark-plus",
-    lang: "jsx",
-  });
 
   function getTextFromNode(node: DOMNode): string {
     if (node.type === "text") {
@@ -165,21 +182,54 @@ export default function TypingSection({
     return "";
   }
 
-  const rep = parse(hlText, {
-    replace: (node, index) => {
-      if (node instanceof Element && node.attribs) {
-        //console.log(getTextFromNode(node) + node.children?.length);
-        if (node.children?.length === 1 && node.name === "span") {
-          console.log(getTextFromNode(node));
-        }
-        return node;
+  let bitty = 0;
+
+  const replace = (node: DOMNode, index: number) => {
+    if (node instanceof Element && node.attribs) {
+      //console.log(getTextFromNode(node) + node.children?.length);
+      const n = node.attribs?.style;
+      if (node.name === "pre") {
+        return (
+          <pre style={{ backgroundColor: "" }}>
+            {domToReact(node.children as DOMNode[], { replace })}
+          </pre>
+        );
       }
-    },
+
+      const x = n ? n.match(/#([0-9a-fA-F]{6})\b/) : null;
+      if (node.children?.length === 1 && node.name === "span" && x != null) {
+        let isGray: boolean = bitty > word;
+        //console.log("ran");
+        bitty++;
+        //console.log(node.attribs?.style);
+        const split = getTextFromNode(node).match(/ *\S+ */g);
+
+        if (isGray) {
+          return (
+            <span style={{ color: "#333333" }}>
+              {domToReact(node.children as DOMNode[])}
+            </span>
+          );
+        } else {
+          return (
+            <span style={{ color: x[0] }}>
+              {domToReact(node.children as DOMNode[])}
+            </span>
+          );
+        }
+      }
+
+      return node;
+    }
+  };
+
+  //so maybe we make our text array from these elements instead?
+  const rep = parse(hlText, {
+    replace: replace,
   });
 
-  //console.log(rep);
-
-  //console.log(state);
+  console.log(textArr2);
+  console.log(hlText);
 
   return (
     <>
@@ -193,21 +243,6 @@ export default function TypingSection({
         <p className={`bg-none block text-[32px] select-none font-arial`}>
           {/* textArr is the string[] holding all the actual words, textState is the boolean[] telling us if 
           each of the words have been correctly typed out */}
-          {textArr.map((text, wordIndex) => (
-            <span
-              className={`${textStates[wordIndex] ? "text-white" : "text-black"}`}
-              key={wordIndex}
-            >
-              {text.split("").map((character, index) => (
-                <span
-                  className={`${wordIndex === word && index < userText.length ? (character === userText[index] ? "text-white" : "text-red-700") : ""}`}
-                  key={index}
-                >
-                  {character}
-                </span>
-              ))}{" "}
-            </span>
-          ))}
         </p>
 
         <input
@@ -257,3 +292,21 @@ export default function TypingSection({
     </>
   );
 }
+
+// {
+//   textArr.map((text, wordIndex) => (
+//     <span
+//       className={`${textStates[wordIndex] ? "text-white" : "text-black"}`}
+//       key={wordIndex}
+//     >
+//       {text.split("").map((character, index) => (
+//         <span
+//           className={`${wordIndex === word && index < userText.length ? (character === userText[index] ? "text-white" : "text-red-700") : ""}`}
+//           key={index}
+//         >
+//           {character}
+//         </span>
+//       ))}{" "}
+//     </span>
+//   ));
+// }
