@@ -202,19 +202,23 @@ export default function TypingSection({
         //console.log("ran");
         bitty++;
         //console.log(node.attribs?.style);
-        const split = getTextFromNode(node).match(/ *\S+ */g);
+        const split = getTextFromNode(node).match(/ *\S+ */g) || [];
 
         if (isGray) {
           return (
-            <span style={{ color: "#333333" }}>
-              {domToReact(node.children as DOMNode[])}
-            </span>
+            <>
+              {split.map((item, index) => (
+                <span style={{ color: "#333333" }}>{item}</span>
+              ))}
+            </>
           );
         } else {
           return (
-            <span style={{ color: x[0] }}>
-              {domToReact(node.children as DOMNode[])}
-            </span>
+            <>
+              {split.map((item, index) => (
+                <span style={{ color: x[0] }}>{item}</span>
+              ))}
+            </>
           );
         }
       }
