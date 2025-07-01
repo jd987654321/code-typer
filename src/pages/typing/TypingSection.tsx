@@ -34,7 +34,8 @@
 
 import { useState, useRef, useEffect, ReactElement } from "react";
 import refreshButton from "../../assets/refresh.png";
-import { createHighlighter } from "shiki";
+import highlighter from "@/lib/highlighter";
+import parse, { domToReact, Element, DOMNode, Text } from "html-react-parser";
 import { create } from "domain";
 
 type Props = {
@@ -64,6 +65,9 @@ export default function TypingSection({
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
   const typeText: string = "int x = 7;\nfor(int i = 0 ; i < x ; i++){";
 
+  const typeText3: string =
+    'import { ReactElement } from "react";\n\ntype Props = {\n  recordedSpeed: boolean[];\n};\n\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n';
+
   //const textArr: string[] = typeText.split(" ");
   const textArr: string[] = typeText.split(/[\n\s]+/);
   //console.log(textArr);
@@ -73,34 +77,15 @@ export default function TypingSection({
 
   const [testShiki, setTextShiki] = useState<string>("");
   //const [textStates, setTextStates] = useState(textArr.map((text) => false));
-  const makeHighLighter = async (): Promise<void> => {
-    const highlighter = await createHighlighter({
-      themes: ["dark-plus"],
-      langs: ["javascript"],
-    });
-
-    // await highlighter.loadLanguage("javascript");
-    // await highlighter.loadTheme("github-dark");
-
-    let lightedText = highlighter.codeToHtml(
-      'import { ReactElement } from "react";\n\ntype Props = {\n  recordedSpeed: boolean[];\n};\n\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n',
-      {
-        theme: "dark-plus",
-        lang: "javascript",
-      }
-    );
-
-    //console.log(lightedText);
-
-    setTextShiki(lightedText);
-  };
 
   useEffect(() => {
     //we are going to make a string, then assign it to a variable or hook
-
-    makeHighLighter();
-
-    setTextStates(textArr.map((text) => false));
+    // let lightedText = highlighter.codeToHtml(typeText3, {
+    //   theme: "dark-plus",
+    //   lang: "jsx",
+    // });
+    // setTextShiki(lightedText);
+    // setTextStates(textArr.map((text) => false));
   }, []);
 
   // console.log("user text is: " + userText);
@@ -109,7 +94,7 @@ export default function TypingSection({
   useEffect(() => {
     const focusText = () => {
       inputRef.current?.focus();
-      console.log("focusing");
+      //console.log("focusing");
     };
 
     const startTimer = () => {
@@ -141,16 +126,73 @@ export default function TypingSection({
 
     return count / 5 / timeInSeconds;
   };
+
+  const somehtml = `
+    <div class="thing">Div 1</div><div>Div 2</div><div>Div 3</div>
+  `;
+
+  // let bitty = 0;
+
+  // const rep = parse(somehtml, {
+  //   replace: (node: DOMNode, index) => {
+  //     if (node instanceof Element && node.attribs) {
+  //       console.log(textArr[bitty] + " " + index);
+  //       bitty++;
+  //       //console.log(node + "  " + index);
+  //       //console.log(node.attribs.class);
+  //       const t = node as Element;
+  //       //console.log("children " + t.children);
+  //       return <div>{domToReact(t.children as DOMNode[])}</div>;
+  //     }
+  //   },
+  // });
+  let hlText = highlighter.codeToHtml(typeText3, {
+    theme: "dark-plus",
+    lang: "jsx",
+  });
+
+  function getTextFromNode(node: DOMNode): string {
+    if (node.type === "text") {
+      return (node as Text).data;
+    }
+
+    if (node.type === "tag" && (node as Element).children) {
+      return (node as Element).children
+        .map((item) => getTextFromNode(item as DOMNode))
+        .join("");
+    }
+
+    return "";
+  }
+
+  const rep = parse(hlText, {
+    replace: (node, index) => {
+      if (node instanceof Element && node.attribs) {
+        //console.log(getTextFromNode(node) + node.children?.length);
+        if (node.children?.length === 1 && node.name === "span") {
+          console.log(getTextFromNode(node));
+        }
+        return node;
+      }
+    },
+  });
+
+  //console.log(rep);
+
   //console.log(state);
 
   return (
     <>
-      <div className="w-[90%] border-black border-2 bg-green-950">
-        <div
-          className="text-sm"
+      <div className="w-[90%]  bg-none">
+        {/* <div
+          className="text-sm font-vscodeTitle"
           dangerouslySetInnerHTML={{ __html: testShiki }}
-        ></div>
+        ></div> */}
+        <div className="text-green-700">{rep}</div>
+        <div className="bg-none">{parse(testShiki)}</div>
         <p className={`bg-none block text-[32px] select-none font-arial`}>
+          {/* textArr is the string[] holding all the actual words, textState is the boolean[] telling us if 
+          each of the words have been correctly typed out */}
           {textArr.map((text, wordIndex) => (
             <span
               className={`${textStates[wordIndex] ? "text-white" : "text-black"}`}
@@ -179,6 +221,8 @@ export default function TypingSection({
               //console.log(e.target.value);
               setUserText(e.target.value);
 
+              //everytime space is clicked, we check if the current word in this input element is the same
+              //as the word we are at in the textArr as index word (the index variable is literally "word")
               if (
                 keyPressed === " " &&
                 textArr[word] === e.target.value.trim()
