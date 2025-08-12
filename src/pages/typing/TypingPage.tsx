@@ -1,58 +1,51 @@
 import { ReactElement, useEffect, useState, useRef, useContext } from "react";
-
-import { useTimerContext } from "@/context/TimerContext";
-
+import { useTimer } from "react-timer-hook";
+import useStore from "../../store/userStore";
 import TypingSection from "./TypingSection";
 import FinishedSection from "./FinishedSection";
 
 export default function TypingPage(): ReactElement {
+  const { setLatestWPM, calculateWPM, setUserTyped, setLineNum, setWordIndex } =
+    useStore();
+  const startingTime = useStore((state) => state.startingTime);
+  const { setStartingTime } = useStore();
+
   const [canType, setCanType] = useState(true);
   const [startedTyping, setStartedTyping] = useState(false);
-  const { persistentTimerVal, setPersistentTimerVal } = useTimerContext();
-  const [timerVal, setTimerVal] = useState(persistentTimerVal);
+  //const { persistentTimerVal, setPersistentTimerVal } = useTimerContext();
+  // const [timerVal, setTimerVal] = useState(persistentTimerVal);
   const [isActive, setIsActive] = useState(false);
   const [textStates, setTextStates] = useState<boolean[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  //const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  // const [WPM, setWPM] = useState(0);
+  const timerSeconds = useRef(startingTime);
+
+  const secondsToDate = (seconds: number) => {
+    const date = new Date();
+    date.setSeconds(date.getSeconds() + seconds);
+    console.log(date.getMinutes());
+    return date;
+  };
+
+  const { seconds, start, pause, resume, restart } = useTimer({
+    autoStart: false,
+    expiryTimestamp: secondsToDate(startingTime),
+    interval: 1,
+    onExpire: () => {
+      setCanType(false);
+      setLatestWPM(calculateWPM(startingTime));
+    },
+  });
+
+  const changeTime = (timeInSeconds: number) => {
+    setStartingTime(timeInSeconds);
+    restart(secondsToDate(timeInSeconds), false);
+  };
 
   useEffect(() => {
-    if (isActive) {
-      intervalRef.current = setInterval(() => {
-        setTimerVal((prev) => {
-          if (prev <= 1) {
-            setIsActive(false);
-            setCanType(false);
-          }
-          if (prev == 0) {
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+    timerSeconds.current = startingTime;
+  }, [startingTime]);
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isActive]);
-
-  const StartTimer = () => {
-    setIsActive(true);
-  };
-
-  const ResetTimer = () => {
-    setCanType(true);
-    setTimerVal(persistentTimerVal);
-    setIsActive(false);
-  };
-
-  const ChangeTimer = (time: number) => {
-    if (!isActive) {
-      setTimerVal(time);
-      setPersistentTimerVal(time);
-    }
-  };
   //we want the timer to start when typing starts, when the timer hits zero typing has to be disabled and a new pop screen
   //appears, we can add stats after, for now i will settle for when the timer hits zero, we change some text
 
@@ -69,28 +62,30 @@ export default function TypingPage(): ReactElement {
     <>
       <div className="text-white">
         <h1>Timer</h1>
-        <p>{timerVal}</p>
+        <p>{seconds}</p>
+
         <div className="w-60 h-20 border-black border-2 ">
           {!canType || isActive ? (
+            //canType == true and isActive == false -> shows timer
             <p>Type Type Type</p>
           ) : (
             <>
               <p>set the timer to</p>
               <button
                 className="border-vscode-outline1 border-2 mx-2"
-                onClick={() => ChangeTimer(10)}
+                onClick={() => changeTime(10)}
               >
                 10
               </button>
               <button
                 className="border-vscode-outline1 border-2 mx-2"
-                onClick={() => ChangeTimer(30)}
+                onClick={() => changeTime(30)}
               >
                 30
               </button>
               <button
                 className="border-vscode-outline1 border-2 mx-2"
-                onClick={() => ChangeTimer(60)}
+                onClick={() => changeTime(60)}
               >
                 60
               </button>
@@ -98,20 +93,39 @@ export default function TypingPage(): ReactElement {
           )}
         </div>
 
-        <button onClick={() => ResetTimer()}>Reset</button>
+        <button
+          onClick={() => {
+            restart(secondsToDate(startingTime), false);
+            setCanType(true);
+            setIsActive(false);
+            setUserTyped("");
+            setLineNum(0);
+            setWordIndex(0);
+            console.log(startingTime);
+          }}
+        >
+          Reset
+        </button>
       </div>
       {canType ? (
         <TypingSection
-          textStates={textStates}
-          setTextStates={setTextStates}
           isActive={isActive}
-          ResetTimer={ResetTimer}
-          StartTimer={StartTimer}
+          setIsActive={setIsActive}
+          ResetTimer={() => {
+            restart(secondsToDate(startingTime));
+          }}
+          StartTimer={() => {
+            //this function is attached to an event listener, which remembers this restart(secondsToDate(startingTime))
+            //function while startingTime = 30, however if we attach a useRef, we can update the ref everytime startingTime
+            //is changed,
+            console.log(timerSeconds.current);
+            restart(secondsToDate(timerSeconds.current));
+          }}
           canType={canType}
           setCanType={setCanType}
         />
       ) : (
-        <FinishedSection recordedSpeed={textStates} />
+        <FinishedSection />
       )}
     </>
   );

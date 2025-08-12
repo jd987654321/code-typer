@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./NavBar";
 import { Button } from "./components/ui/button";
 import Sidebar from "./components/my_own/Sidebar";
+import { Analytics } from "@vercel/analytics/react";
 
 import { TimerContext } from "./context/TimerContext";
 
@@ -28,7 +29,7 @@ export default function App(): ReactElement {
               <p>Typing Some Code</p>
             </div>
           </div>
-          <div className="bg-vscode-primary h-screen border-green-700 border-2 flex flex-1 w-full">
+          <div className="bg-vscode-primary h-screen  flex flex-1 w-full">
             <Sidebar />
             <div className="w-full">
               <NavBar></NavBar>
@@ -36,11 +37,12 @@ export default function App(): ReactElement {
                 <Route path="/" element={<Main />} />
                 <Route path="/type" element={<TypingPage />} />
                 <Route path="/account" element={<AccountPage />} />
-                <Route path="login" element={<LoginPage />} />
+                {/* <Route path="login" element={<LoginPage />} /> */}
               </Routes>
             </div>
           </div>
         </div>
+        <Analytics />
       </BrowserRouter>
     </TimerContext.Provider>
   );

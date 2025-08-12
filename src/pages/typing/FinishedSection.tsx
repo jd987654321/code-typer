@@ -1,17 +1,21 @@
 import { ReactElement } from "react";
+import useStore from "../../store/userStore";
+import { useShallow } from "zustand/shallow";
 
 type Props = {
   recordedSpeed: boolean[];
 };
 
-export default function FinishedSection({
-  recordedSpeed,
-}: Props): ReactElement {
-  console.log(recordedSpeed);
+export default function FinishedSection(): ReactElement {
+  const { latestWPM, lineNum, wordIndex, textArray } = useStore();
   return (
     <div className="text-white">
       <p>Nice job ur done now :D</p>
-      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>
+      <p>Result: {latestWPM} WPM</p>
+      <p>
+        You stopped at line: {lineNum} and wordIndex: {wordIndex} word:{" "}
+        {textArray?.[lineNum][wordIndex]}
+      </p>
     </div>
   );
 }
