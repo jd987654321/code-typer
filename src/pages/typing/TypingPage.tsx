@@ -27,7 +27,7 @@ export default function TypingPage(): ReactElement {
     return date;
   };
 
-  const { seconds, start, pause, resume, restart } = useTimer({
+  const { totalSeconds, seconds, start, pause, resume, restart } = useTimer({
     autoStart: false,
     expiryTimestamp: secondsToDate(startingTime),
     interval: 1,
@@ -62,7 +62,7 @@ export default function TypingPage(): ReactElement {
     <>
       <div className="text-white">
         <h1>Timer</h1>
-        <p>{seconds}</p>
+        <p>{totalSeconds}</p>
 
         <div className="w-60 h-20 border-black border-2 ">
           {!canType || isActive ? (
