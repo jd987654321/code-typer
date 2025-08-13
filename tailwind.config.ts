@@ -22,6 +22,7 @@ export default {
       },
       colors: {
         vscode: {
+          background: "#1F1F1F",
           primary: "#181818",
           secondary: "#242424",
           outline1: "#2B2B2B",

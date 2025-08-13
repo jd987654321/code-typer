@@ -27,7 +27,7 @@ export default function TypingPage(): ReactElement {
     return date;
   };
 
-  const { totalSeconds, seconds, start, pause, resume, restart } = useTimer({
+  const { totalSeconds, start, pause, resume, restart } = useTimer({
     autoStart: false,
     expiryTimestamp: secondsToDate(startingTime),
     interval: 1,

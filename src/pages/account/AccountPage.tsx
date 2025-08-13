@@ -7,7 +7,6 @@ import {
   EventProps,
   Legend,
 } from "@tremor/react";
-import { AreaChartHero } from "./test";
 
 //in terms of data, lang and framework are pretty consistent, we are going to get a bunch of results
 //and then use calculate the percentage from the raw numbers,
