@@ -39,16 +39,6 @@ export default function Sidebar(): ReactElement {
   );
   const problemType = useStore((state) => state.problemType);
 
-  // const [time, setTime] = useState<number>(15);
-  // const [language, setLanguage] = useState<Languages>("Any");
-  // const [style, setStyle] = useState<Styles>("App Code");
-  // const [framework, setFramework] = useState<string>("Any");
-  // const [paradigm, setParadigm] = useState<Paradigms>("Both");
-  // const [includeImports, setIncludeImports] = useState<YesOrNo>("No");
-  // const [includeFunctionDefinition, setIncludeFunctionDefinition] =
-  //   useState<YesOrNo>("Yes");
-  // const [problemType, setProblemType] = useState<ProblemTypes>("Any");
-
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [timeOpen, setTimeOpen] = useState<boolean>(false);
@@ -91,23 +81,26 @@ export default function Sidebar(): ReactElement {
     setProblemTypeOpen(false);
   };
 
+  //right now it is just a div that expands
+  //we want a div that stands alone, then an absolute div that pops into view when triggered
+
   return (
-    <>
+    <div className="border-x-2 border-vscode-outline1 text-vscode-text-bright font-normal font-vscodeText relative whitespace-nowrap h-full w-24  bg-vscode-primary">
       <div
-        className={`text-vscode-text-bright font-normal font-vscodeText px-6 overflow-hidden whitespace-nowrap h-full ${isOpen ? "w-[600px]" : "w-24"} border-x-2 border-vscode-outline1 bg-vscode-primary`}
+        className={` ${isOpen ? "border-blue-500 border-l-2" : ""} h-14 w-full box-border flex justify-center items-center`}
+        onClick={() => setIsOpen((state) => !state)}
       >
-        <div className="h-14 flex flex-row items-center gap-2">
-          <img
-            src={menu}
-            className="w-8 h-8 "
-            alt={"there should be a super cool icon here"}
-          />
-
-          {isOpen ? <p className="text-2xl">Settings</p> : <></>}
-        </div>
-
+        <img
+          src={menu}
+          className="w-8"
+          alt={"there should be a super cool icon here"}
+        />
+      </div>
+      <div
+        className={`border-x-2 z-50 border-vscode-outline1 px-4 top-0 left-full absolute ${isOpen ? "visible" : "hidden"} w-[500px] bg-vscode-primary h-full`}
+      >
         {isOpen ? (
-          <div className="flex flex-col gap-2 mt-8">
+          <div className=" flex flex-col gap-2 mt-4">
             <div className="flex justify-between items-center">
               <div className="text-xl">Language</div>
               <DropdownButton
@@ -199,6 +192,6 @@ export default function Sidebar(): ReactElement {
           <></>
         )}
       </div>
-    </>
+    </div>
   );
 }
