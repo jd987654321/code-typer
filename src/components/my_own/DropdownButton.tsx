@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 type Props = {
-  options: string[];
+  options: readonly string[];
   currentOption: string;
-  setCurrentOption: React.Dispatch<React.SetStateAction<string>>;
+  setCurrentOption: (option: string) => void;
   menuOpen: boolean;
   setMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onSelect?: () => void;
@@ -50,7 +50,7 @@ export function DropdownButton({
           {options.map(
             (item, index): ReactElement => (
               <DropdownMenuItem
-                key={item}
+                key={item + index}
                 onClick={() => {
                   setCurrentOption(item);
                   onSelect?.();

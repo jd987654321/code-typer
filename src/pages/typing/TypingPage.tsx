@@ -12,12 +12,8 @@ export default function TypingPage(): ReactElement {
 
   const [canType, setCanType] = useState(true);
   const [startedTyping, setStartedTyping] = useState(false);
-  //const { persistentTimerVal, setPersistentTimerVal } = useTimerContext();
-  // const [timerVal, setTimerVal] = useState(persistentTimerVal);
   const [isActive, setIsActive] = useState(false);
   const [textStates, setTextStates] = useState<boolean[]>([]);
-  //const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  // const [WPM, setWPM] = useState(0);
   const timerSeconds = useRef(startingTime);
 
   const secondsToDate = (seconds: number) => {

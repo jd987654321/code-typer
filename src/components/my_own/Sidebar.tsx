@@ -16,71 +16,40 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import useStore, { options } from "@/store/sidebarStore";
 import { DropdownButton } from "./DropdownButton";
 
 export default function Sidebar(): ReactElement {
-  //open the big menu if something is clicked
-  //otherwise do a small one
-  const languages: string[] = [
-    "Java",
-    "Python",
-    "Rust",
-    "C++",
-    "Go",
-    "Typescript",
-    "Javascript",
-    "Any",
-  ];
-  const styles: string[] = ["App Code", "Algorithmic", "Any"];
-  const frameworks: Record<Languages, string[]> = {
-    Java: ["Spring Boot", "Hibernate", "Jakarta EE", "None"],
-    Python: ["Django", "Flask", "FastAPI", "None"],
-    Rust: ["Actix Web", "Rocket", "Bevy", "Tauri", "None"],
-    "C++": ["Qt", "Boost", "Unreal Engine", "None"],
-    Go: ["Gin", "Fiber", "Echo", "Beego", "None"],
-    Typescript: ["Next.js", "Angular", "NestJS", "Remix", "None"],
-    Javascript: ["React", "Vue.js", "Next.js", "Express.js", "None"],
-    Any: ["Any"],
-  };
-  const paradigms: string[] = ["Object-Oriented", "Functional", "Both"];
-  const yesOrNo: string[] = ["Yes", "No"];
-  const problemTypes = [
-    "Any",
-    "Two Pointers",
-    "Sliding Window",
-    "Hash Table",
-    "Stack",
-    "Queue",
-    "Linked List",
-    "Tree",
-    "Graph",
-    "Heap",
-    "Math",
-    "Greedy",
-    "Sorting",
-    "Bit Manipulation",
-    "Dynamic Programming",
-    "Backtracking",
-    "Prefix Sum",
-  ];
+  const {
+    setLanguage,
+    setStyle,
+    setFramework,
+    setParadigm,
+    setIncludeImports,
+    setIncludeFunctionDefinition,
+    setProblemType,
+  } = useStore();
+  const language = useStore((state) => state.language);
+  const style = useStore((state) => state.style);
+  const framework = useStore((state) => state.framework);
+  const paradigm = useStore((state) => state.paradigm);
+  const includeImports = useStore((state) => state.includeImports);
+  const includeFunctionDefinition = useStore(
+    (state) => state.includeFunctionDefinition
+  );
+  const problemType = useStore((state) => state.problemType);
 
-  type Languages = (typeof languages)[number];
-  type Styles = (typeof styles)[number];
-  type Paradigms = (typeof paradigms)[number];
-  type YesOrNo = (typeof yesOrNo)[number];
-  type ProblemTypes = (typeof problemTypes)[number];
+  // const [time, setTime] = useState<number>(15);
+  // const [language, setLanguage] = useState<Languages>("Any");
+  // const [style, setStyle] = useState<Styles>("App Code");
+  // const [framework, setFramework] = useState<string>("Any");
+  // const [paradigm, setParadigm] = useState<Paradigms>("Both");
+  // const [includeImports, setIncludeImports] = useState<YesOrNo>("No");
+  // const [includeFunctionDefinition, setIncludeFunctionDefinition] =
+  //   useState<YesOrNo>("Yes");
+  // const [problemType, setProblemType] = useState<ProblemTypes>("Any");
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [time, setTime] = useState<number>(15);
-  const [language, setLanguage] = useState<Languages>("Any");
-  const [style, setStyle] = useState<Styles>("App Code");
-  const [framework, setFramework] = useState<string>("Any");
-  const [paradigm, setParadigm] = useState<Paradigms>("Both");
-  const [includeImports, setIncludeImports] = useState<YesOrNo>("No");
-  const [includeFunctionDefinition, setIncludeFunctionDefinition] =
-    useState<YesOrNo>("Yes");
-  const [problemType, setProblemType] = useState<ProblemTypes>("Any");
-
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [timeOpen, setTimeOpen] = useState<boolean>(false);
   const [langOpen, setLangOpen] = useState<boolean>(false);
@@ -135,48 +104,13 @@ export default function Sidebar(): ReactElement {
         {isOpen ? (
           <>
             <div>Timer Setting</div>
-            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="default"
-                  className="rounded-none border-2 border-vscode-outline1"
-                >
-                  {time}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-72 font-vscodeText text-white bg-vscode-secondary"
-                align="start"
-              >
-                {/* <DropdownMenuLabel>My Account</DropdownMenuLabel> */}
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setTime(15);
-                    }}
-                  >
-                    15 Seconds
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setTime(30);
-                    }}
-                  >
-                    30 Seconds
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setTime(60);
-                    }}
-                  >
-                    60 Seconds
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <DropdownMenu
+              open={menuOpen}
+              onOpenChange={setMenuOpen}
+            ></DropdownMenu>
             <div>Language</div>
             <DropdownButton
-              options={languages}
+              options={options.languages}
               currentOption={language}
               setCurrentOption={setLanguage}
               menuOpen={langOpen}
@@ -185,9 +119,9 @@ export default function Sidebar(): ReactElement {
             />
             <div>App Code vs Algorithmic</div>
             <DropdownButton
-              options={styles}
+              options={options.styles}
               currentOption={style}
-              setCurrentOption={setStyle}
+              setCurrentOption={(option) => setStyle(option)}
               menuOpen={styleOpen}
               setMenuOpen={setStyleOpen}
             />
@@ -196,7 +130,7 @@ export default function Sidebar(): ReactElement {
               <>
                 <div>Framework</div>
                 <DropdownButton
-                  options={frameworks[language]}
+                  options={options.frameworks[language]}
                   currentOption={framework}
                   setCurrentOption={setFramework}
                   menuOpen={frameworkOpen}
@@ -204,7 +138,7 @@ export default function Sidebar(): ReactElement {
                 />
                 <div>Paradigm</div>
                 <DropdownButton
-                  options={paradigms}
+                  options={options.paradigms}
                   currentOption={paradigm}
                   setCurrentOption={setParadigm}
                   menuOpen={paradigmOpen}
@@ -213,7 +147,7 @@ export default function Sidebar(): ReactElement {
                 <div>
                   <div>Include Imports?</div>
                   <DropdownButton
-                    options={yesOrNo}
+                    options={options.yesOrNo}
                     currentOption={includeImports}
                     setCurrentOption={setIncludeImports}
                     menuOpen={importsOpen}
@@ -223,7 +157,7 @@ export default function Sidebar(): ReactElement {
                 <div>
                   <div>Include Function Definitions?</div>
                   <DropdownButton
-                    options={yesOrNo}
+                    options={options.yesOrNo}
                     currentOption={includeFunctionDefinition}
                     setCurrentOption={setIncludeFunctionDefinition}
                     menuOpen={functionOpen}
@@ -235,7 +169,7 @@ export default function Sidebar(): ReactElement {
               <>
                 <div>Problem Type</div>
                 <DropdownButton
-                  options={problemTypes}
+                  options={options.problemTypes}
                   currentOption={problemType}
                   setCurrentOption={setProblemType}
                   menuOpen={problemTypeOpen}
