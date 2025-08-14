@@ -12,7 +12,7 @@ const languages: string[] = [
   "Any",
 ] as const;
 
-const styles: string[] = ["App Code", "Algorithmic", "Any"];
+const styles: string[] = ["App Code", "Leetcode", "Any"];
 
 const frameworks: Record<Languages, string[]> = {
   Java: ["Spring Boot", "Hibernate", "Jakarta EE", "None"],

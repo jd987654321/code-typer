@@ -49,7 +49,7 @@ export default function Sidebar(): ReactElement {
   //   useState<YesOrNo>("Yes");
   // const [problemType, setProblemType] = useState<ProblemTypes>("Any");
 
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(true);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [timeOpen, setTimeOpen] = useState<boolean>(false);
   const [langOpen, setLangOpen] = useState<boolean>(false);
@@ -78,75 +78,88 @@ export default function Sidebar(): ReactElement {
     );
   };
 
+  const closeAllMenus = () => {
+    setIsOpen(false);
+    setMenuOpen(false);
+    setTimeOpen(false);
+    setLangOpen(false);
+    setStyleOpen(false);
+    setFrameworkOpen(false);
+    setParadigmOpen(false);
+    setImportsOpen(false);
+    setFunctionOpen(false);
+    setProblemTypeOpen(false);
+  };
+
   return (
     <>
       <div
-        onMouseLeave={() => {
-          if (!isAnyMenuOpen()) {
-            setIsOpen(false);
-            //console.log("mouse left");
-          }
-        }}
-        onMouseEnter={() => {
-          if (!isAnyMenuOpen()) {
-            setIsOpen(true);
-            //console.log("mouse entered");
-          }
-        }}
-        className={`text-vscode-text-bright h-full ${isOpen ? "w-96" : "w-24"} border-x-2 border-vscode-outline1 bg-vscode-primary transition-all duration-500`}
+        className={`text-vscode-text-bright font-normal font-vscodeText px-6 overflow-hidden whitespace-nowrap h-full ${isOpen ? "w-[600px]" : "w-24"} border-x-2 border-vscode-outline1 bg-vscode-primary`}
       >
-        <div className="flex">
-          <img src={menu} alt={"there should be a super cool icon here"} />
+        <div className="h-14 flex flex-row items-center gap-2">
+          <img
+            src={menu}
+            className="w-8 h-8 "
+            alt={"there should be a super cool icon here"}
+          />
 
-          {isOpen ? <p>Settings</p> : <></>}
+          {isOpen ? <p className="text-2xl">Settings</p> : <></>}
         </div>
 
         {isOpen ? (
-          <>
-            <div>Timer Setting</div>
-            <DropdownMenu
-              open={menuOpen}
-              onOpenChange={setMenuOpen}
-            ></DropdownMenu>
-            <div>Language</div>
-            <DropdownButton
-              options={options.languages}
-              currentOption={language}
-              setCurrentOption={setLanguage}
-              menuOpen={langOpen}
-              setMenuOpen={setLangOpen}
-              onSelect={() => setFramework("None")}
-            />
-            <div>App Code vs Algorithmic</div>
-            <DropdownButton
-              options={options.styles}
-              currentOption={style}
-              setCurrentOption={(option) => setStyle(option)}
-              menuOpen={styleOpen}
-              setMenuOpen={setStyleOpen}
-            />
+          <div className="flex flex-col gap-2 mt-8">
+            <div className="flex justify-between items-center">
+              <div className="text-xl">Language</div>
+              <DropdownButton
+                widthStyling="w-48"
+                options={options.languages}
+                currentOption={language}
+                setCurrentOption={setLanguage}
+                menuOpen={langOpen}
+                setMenuOpen={setLangOpen}
+                onSelect={() => setFramework("None")}
+              />
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="text-xl">Style</div>
+              <DropdownButton
+                widthStyling="w-48"
+                options={options.styles}
+                currentOption={style}
+                setCurrentOption={(option) => setStyle(option)}
+                menuOpen={styleOpen}
+                setMenuOpen={setStyleOpen}
+              />
+            </div>
             {/* just need to conditionally render these based on which option  */}
             {style === "App Code" ? (
-              <>
-                <div>Framework</div>
-                <DropdownButton
-                  options={options.frameworks[language]}
-                  currentOption={framework}
-                  setCurrentOption={setFramework}
-                  menuOpen={frameworkOpen}
-                  setMenuOpen={setFrameworkOpen}
-                />
-                <div>Paradigm</div>
-                <DropdownButton
-                  options={options.paradigms}
-                  currentOption={paradigm}
-                  setCurrentOption={setParadigm}
-                  menuOpen={paradigmOpen}
-                  setMenuOpen={setParadigmOpen}
-                />
-                <div>
-                  <div>Include Imports?</div>
+              <div className="mt-8 flex flex-col gap-2">
+                <div className="flex justify-between items-center gap-4">
+                  <div className="text-sm select-none">Framework</div>
                   <DropdownButton
+                    widthStyling="w-48"
+                    options={options.frameworks[language]}
+                    currentOption={framework}
+                    setCurrentOption={setFramework}
+                    menuOpen={frameworkOpen}
+                    setMenuOpen={setFrameworkOpen}
+                  />
+                </div>
+                <div className="flex justify-between items-center gap-4">
+                  <div className="text-sm select-none">Paradigm</div>
+                  <DropdownButton
+                    widthStyling="w-48"
+                    options={options.paradigms}
+                    currentOption={paradigm}
+                    setCurrentOption={setParadigm}
+                    menuOpen={paradigmOpen}
+                    setMenuOpen={setParadigmOpen}
+                  />
+                </div>
+                <div className="flex justify-between items-center gap-4">
+                  <div className="text-sm select-none">Include Imports?</div>
+                  <DropdownButton
+                    widthStyling="w-32"
                     options={options.yesOrNo}
                     currentOption={includeImports}
                     setCurrentOption={setIncludeImports}
@@ -154,9 +167,10 @@ export default function Sidebar(): ReactElement {
                     setMenuOpen={setImportsOpen}
                   />
                 </div>
-                <div>
-                  <div>Include Function Definitions?</div>
+                <div className="flex justify-between items-center gap-4">
+                  <div className="text-sm select-none">Function Headers?</div>
                   <DropdownButton
+                    widthStyling="w-32"
                     options={options.yesOrNo}
                     currentOption={includeFunctionDefinition}
                     setCurrentOption={setIncludeFunctionDefinition}
@@ -164,22 +178,23 @@ export default function Sidebar(): ReactElement {
                     setMenuOpen={setFunctionOpen}
                   />
                 </div>
-              </>
-            ) : style === "Algorithmic" ? (
-              <>
-                <div>Problem Type</div>
+              </div>
+            ) : style === "Leetcode" ? (
+              <div className="flex items-center justify-between mt-4">
+                <div className="text-sm select-none">Category</div>
                 <DropdownButton
+                  widthStyling="w-60"
                   options={options.problemTypes}
                   currentOption={problemType}
                   setCurrentOption={setProblemType}
                   menuOpen={problemTypeOpen}
                   setMenuOpen={setProblemTypeOpen}
                 />
-              </>
+              </div>
             ) : (
               <></>
             )}
-          </>
+          </div>
         ) : (
           <></>
         )}
