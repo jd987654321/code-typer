@@ -1,10 +1,12 @@
 import { ReactElement, useEffect, useState, useRef, useContext } from "react";
 import { useTimer } from "react-timer-hook";
-import useStore from "../../store/userStore";
-import TypingSection from "./TypingSection";
-import FinishedSection from "./FinishedSection";
+import useStore from "@/store/userStore";
+import useAuthStore from "@/store/authStore";
+import TypingSection from "@/pages/typing/TypingSection";
+import FinishedSection from "@/pages/typing/FinishedSection";
 
 export default function TypingPage(): ReactElement {
+  const modalOpen = useAuthStore((state) => state.modalOpen);
   const { setLatestWPM, calculateWPM, setUserTyped, setLineNum, setWordIndex } =
     useStore();
   const startingTime = useStore((state) => state.startingTime);

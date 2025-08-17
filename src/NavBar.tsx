@@ -10,7 +10,7 @@ import {
   NavigationMenuViewport,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import LogoElement from "./components/my_own/LogoElement";
+import LogoElement, { LanguageNames } from "./components/my_own/LogoElement";
 import { ReactElement } from "react";
 
 export default function NavBar(): ReactElement {
@@ -19,8 +19,28 @@ export default function NavBar(): ReactElement {
 
   const selectStyling = (path: string) => {
     return location.pathname === path
-      ? "bg-vscode-background text-vscode-text-bright border-t-blue-500 border-t-2"
-      : "bg-vscode-primary text-vscode-text-dull border-b-vscode-outline1 border-b-2";
+      ? "bg-vscode-background text-vscode-text-bright border-t-blue-500 border-t-[1px]"
+      : "bg-vscode-primary text-vscode-text-dull border-b-vscode-outline1 border-b-[1px] hover:bg-vscode-background";
+  };
+
+  const NavbarElement = ({
+    path,
+    language,
+    filename,
+  }: {
+    path: string;
+    language: LanguageNames;
+    filename: string;
+  }) => {
+    return (
+      <div
+        className={`${selectStyling(path)} transition-bg duration-100 ease-in-out select-none h-full w-36 pl-2 gap-1 inline-flex justify-start items-center border-r-[1px] border-r-vscode-outline1 hover:cursor-pointer`}
+        onClick={() => navigate(path)}
+      >
+        <LogoElement name={language} size={22} />
+        <div className="text-sm">{filename}</div>
+      </div>
+    );
   };
 
   return (
@@ -34,30 +54,11 @@ export default function NavBar(): ReactElement {
        * unselected: no x icon, bg black, text, gray
        *
        */}
-      <div
-        className={`${selectStyling("/")} select-none h-full w-36 pl-2 gap-1 inline-flex justify-start items-center border-r-2 border-r-vscode-outline1 hover:cursor-pointer`}
-        onClick={() => navigate("/")}
-      >
-        <LogoElement name="python" size={22} />
-        <div className="text-sm">Type.py</div>
-      </div>
 
-      <div
-        className={`${selectStyling("/stats")} select-none h-full w-36 pl-2 gap-1  inline-flex justify-start items-center border-r-2 border-r-vscode-outline1 hover:cursor-pointer`}
-        onClick={() => navigate("/stats")}
-      >
-        <LogoElement name="csv" size={22} />
-        <div className="text-sm">stats.csv</div>
-      </div>
-
-      <div
-        className={`${selectStyling("/account")} select-none h-full w-36 pl-2 gap-1  inline-flex justify-start items-center border-r-2 border-r-vscode-outline1 hover:cursor-pointer`}
-        onClick={() => navigate("/account")}
-      >
-        <LogoElement name="env" size={22} />
-        <div className="text-sm">Account.env</div>
-      </div>
-      <div className="inline-block h-full flex-1 border-b-2 border-vscode-outline1"></div>
+      <NavbarElement path="/" language="python" filename="Type.py" />
+      <NavbarElement path="/stats" language="csv" filename="stats.csv" />
+      <NavbarElement path="/account" language="env" filename="Account.env" />
+      <div className="inline-block h-full flex-1 border-b-[1px] border-vscode-outline1"></div>
     </div>
   );
 }

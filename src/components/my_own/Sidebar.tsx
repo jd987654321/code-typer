@@ -1,20 +1,5 @@
 import { ReactElement, useState } from "react";
 import { menu, menuOpener } from "@/assets/menu";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 import useStore, { options } from "@/store/sidebarStore";
 import { DropdownButton } from "./DropdownButton";
@@ -39,7 +24,7 @@ export default function Sidebar(): ReactElement {
   );
   const problemType = useStore((state) => state.problemType);
 
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [timeOpen, setTimeOpen] = useState<boolean>(false);
   const [langOpen, setLangOpen] = useState<boolean>(false);
@@ -85,24 +70,24 @@ export default function Sidebar(): ReactElement {
   //we want a div that stands alone, then an absolute div that pops into view when triggered
 
   return (
-    <div className="border-x-2 border-vscode-outline1 text-vscode-text-bright font-normal font-vscodeText relative whitespace-nowrap h-full w-24  bg-vscode-primary">
+    <div className="border-x-[1px] z-10 border-vscode-outline1 text-vscode-text-bright font-normal font-vscodeText relative whitespace-nowrap h-full w-24  bg-vscode-primary">
       <div
-        className={` ${isOpen ? "border-blue-500 border-l-2" : ""} h-14 w-full box-border flex justify-center items-center`}
+        className={` ${isOpen ? "border-blue-500 border-l-[1px]" : ""} h-14 w-full box-border flex justify-center items-center hover:cursor-pointer hover:bg-gray-600`}
         onClick={() => setIsOpen((state) => !state)}
       >
         <img
           src={menu}
-          className="w-8"
+          className="w-8 select-none"
           alt={"there should be a super cool icon here"}
         />
       </div>
       <div
-        className={`border-x-2 z-50 border-vscode-outline1 px-4 top-0 left-full absolute ${isOpen ? "visible" : "hidden"} w-[500px] bg-vscode-primary h-full`}
+        className={`border-x-[1px] border-vscode-outline1 px-4 top-0 left-full absolute ${isOpen ? "visible" : "hidden"} w-[500px] bg-vscode-primary h-full`}
       >
         {isOpen ? (
           <div className=" flex flex-col gap-2 mt-4">
             <div className="flex justify-between items-center">
-              <div className="text-xl">Language</div>
+              <div className="text-xl select-none">Language</div>
               <DropdownButton
                 widthStyling="w-48"
                 options={options.languages}
@@ -114,7 +99,7 @@ export default function Sidebar(): ReactElement {
               />
             </div>
             <div className="flex justify-between items-center">
-              <div className="text-xl">Style</div>
+              <div className="text-xl select-none">Style</div>
               <DropdownButton
                 widthStyling="w-48"
                 options={options.styles}

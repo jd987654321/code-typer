@@ -11,7 +11,7 @@ import typescriptLogo from "@/assets/languageIcons/typescript.svg";
 import vueLogo from "@/assets/languageIcons/vue.svg";
 import React from "react";
 
-type LanguageNames =
+export type LanguageNames =
   | "env"
   | "csv"
   | "cpp"

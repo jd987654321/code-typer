@@ -53,6 +53,7 @@ export default function AccountPage() {
       <div>
         <div>Yearly WPM Summary</div>
         <DropdownButton
+          widthStyling=""
           options={years}
           currentOption={year}
           setCurrentOption={setYear}

@@ -35,9 +35,9 @@
 
 import { useState, useRef, useEffect, ReactElement, useMemo } from "react";
 import refreshButton from "../../assets/refresh.png";
+import useAuthStore from "@/store/authStore";
 import useStore from "@/store/userStore";
 import parse, { domToReact, Element, DOMNode, Text } from "html-react-parser";
-import { create } from "domain";
 import { useShallow } from "zustand/shallow";
 
 type Props = {
@@ -89,17 +89,16 @@ export default function TypingSection({
       textArray: state.textArray,
     }))
   );
+  const modalOpen = useAuthStore((state) => state.modalOpen);
+  const modalOpenRef = useRef(modalOpen);
 
+  const keyPressedRef = useRef("");
   const lineNumRef = useRef(0);
   const wordIndexRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const isActiveRef = useRef<boolean>(isActive);
   const textArrayRef = useRef<string[][] | null>(null);
   const spaceArrayRef = useRef<number[] | null>(null);
-
-  useEffect(() => {
-    isActiveRef.current = isActive;
-  }, [isActive]);
 
   useEffect(() => {
     const focusText = () => {
@@ -116,8 +115,10 @@ export default function TypingSection({
     };
 
     const handleKeydown = () => {
-      focusText();
-      startTimer();
+      if (!modalOpenRef.current) {
+        focusText();
+        startTimer();
+      }
     };
 
     document.addEventListener("keydown", handleKeydown);
@@ -129,6 +130,14 @@ export default function TypingSection({
       'import { ReactElement } from "react";\ntype Props = {\n  recordedSpeed: boolean[];\n};\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  const [hok, setHok] = useState<number>(0);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n'
     );
   }, []);
+
+  useEffect(() => {
+    modalOpenRef.current = modalOpen;
+  }, [modalOpen]);
+
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
 
   useEffect(() => {
     lineNumRef.current = lineNum;
@@ -165,27 +174,85 @@ export default function TypingSection({
   }) => {
     let foundIncorrectLetter = false;
     //so we have userText, we match each letter of userText to the currentword
-    return (
-      <span>
-        {(text + " ").split("").map((value, index) => {
-          const key = value.toString() + index;
-          if (foundIncorrectLetter || userTyped[index] !== value) {
-            foundIncorrectLetter = true;
-            return (
-              <span key={key} className="text-gray-700">
-                {value}
-              </span>
-            );
-          } else {
-            return (
-              <span key={key} className="text-white">
-                {value}
-              </span>
-            );
-          }
-        })}
-      </span>
-    );
+    //our current logic is just tracking the number of correct letters in the incorrect word
+    //but now we will be following monkeytypes system which I think makes the most sense
+    //we track the entire word, if we are >= userTyped.length then we just default to gray as untyped
+    //in the case of userTyped.length > text.length, then we instead render the userTyped word, following
+    //the same logic
+    //thus we dont be needing to track the correct or incorrect word
+    if (userTyped.length > text.length) {
+      return (userTyped + " ").split("").map((value, index) => {
+        let textColor = "";
+        if (index == userTyped.length) {
+          console.log("first half");
+        }
+
+        if (index >= text.length) {
+          textColor = "text-red-950";
+        } else if (userTyped[index] !== text[index]) {
+          textColor = "text-red-700";
+        } else {
+          textColor = "text-white";
+        }
+
+        if (index >= text.length) {
+          return (
+            <span key={value + index} className={`${textColor}`}>
+              {value}
+            </span>
+          );
+        } else {
+          return (
+            <span key={value + index} className={`${textColor}`}>
+              {text[index]}
+            </span>
+          );
+        }
+      });
+    } else {
+      return (text + " ").split("").map((value, index) => {
+        let textColor = "";
+        if (index == userTyped.length) {
+          console.log("second half");
+        }
+
+        if (index >= userTyped.length) {
+          textColor = "text-gray-700";
+        } else if (userTyped[index] !== text[index]) {
+          textColor = "text-red-700";
+        } else {
+          textColor = "text-white";
+        }
+
+        return (
+          <span key={value + index} className={`${textColor}`}>
+            {value}
+          </span>
+        );
+      });
+    }
+
+    // return (
+    //   <span>
+    //     {(text + " ").split("").map((value, index) => {
+    //       const key = value.toString() + index;
+    //       if (foundIncorrectLetter || userTyped[index] !== value) {
+    //         foundIncorrectLetter = true;
+    //         return (
+    //           <span key={key} className="text-gray-700">
+    //             {value}
+    //           </span>
+    //         );
+    //       } else {
+    //         return (
+    //           <span key={key} className="text-white">
+    //             {value}
+    //           </span>
+    //         );
+    //       }
+    //     })}
+    //   </span>
+    // );
   };
 
   const RenderTypedLine = ({ arrayOfWords, spaces }: LineElementProps) => {
@@ -247,6 +314,9 @@ export default function TypingSection({
     );
   };
 
+  //we could do two things to show incorrect text, either expand the text with extra words
+  //
+
   const RenderText = ({
     formattedTextArray,
     lineNum,
@@ -259,60 +329,62 @@ export default function TypingSection({
     spacesArray: number[] | null;
   }) => {
     return (
-      <div>
-        {!formattedTextArray || !spacesArray ? (
-          <div>Loading...</div>
-        ) : (
-          formattedTextArray.map((value, index) => {
-            const key = value.toString() + index;
-            if (index > lineNum) {
-              return (
-                <RenderUntypedLine
-                  key={key}
-                  arrayOfWords={value}
-                  spaces={spacesArray[index]}
-                />
-              );
-            } else if (index < lineNum) {
-              return (
-                <RenderTypedLine
-                  key={key}
-                  arrayOfWords={value}
-                  spaces={spacesArray[index]}
-                />
-              );
-            } else {
-              return (
-                <RenderCurrentLine
-                  key={key}
-                  arrayOfWords={value}
-                  spaces={spacesArray[index]}
-                  currentWordIndex={wordIndex}
-                  userTyped={userTyped}
-                />
-              );
-            }
-          })
-        )}
+      <div className="w-[700px] border-green-400 border-2 overflow-hidden">
+        <div
+          style={{
+            //40 comes from space between and span height, 24 and 16 respectively
+            transform: `translateY(-${(24 + 0) * lineNum}px)`,
+          }}
+          className="border-red-500 border-2 transition-transform duration-300"
+        >
+          {!formattedTextArray || !spacesArray ? (
+            <div>Loading...</div>
+          ) : (
+            formattedTextArray.map((value, index) => {
+              const key = value.toString() + index;
+              if (index > lineNum) {
+                return (
+                  <RenderUntypedLine
+                    key={key}
+                    arrayOfWords={value}
+                    spaces={spacesArray[index]}
+                  />
+                );
+              } else if (index < lineNum) {
+                return (
+                  <RenderTypedLine
+                    key={key}
+                    arrayOfWords={value}
+                    spaces={spacesArray[index]}
+                  />
+                );
+              } else {
+                return (
+                  <RenderCurrentLine
+                    key={key}
+                    arrayOfWords={value}
+                    spaces={spacesArray[index]}
+                    currentWordIndex={wordIndex}
+                    userTyped={userTyped}
+                  />
+                );
+              }
+            })
+          )}
+        </div>
       </div>
     );
   };
 
+  /* 
+  in order to shift the text upward, we can just offset by a specific amount each time, we can just
+  find the constant amount that it shifts up by and update it each time
+
+  */
+
   return (
     <>
-      <div className="w-[90%] text-white bg-none">
-        {/* <button onClick={() => setWordIndex((val) => val + 1)}>+1</button>
-        <button onClick={() => setWordIndex((val) => val - 1)}>-1</button> */}
-        {/* <div
-          className="text-sm font-vscodeTitle"
-          dangerouslySetInnerHTML={{ __html: testShiki }}
-        ></div> */}
-        <p className={`bg-none block text-[32px] select-none font-arial`}>
-          {/* textArr is the string[] holding all the actual words, textState is the boolean[] telling us if 
-          each of the words have been correctly typed out */}
-        </p>
-        <div>{userTyped}</div>
-
+      <div className="w-[90%] text-white bg-none font-vscodeText">
         <RenderText
           formattedTextArray={textArray}
           lineNum={lineNum}
@@ -320,6 +392,7 @@ export default function TypingSection({
           spacesArray={spacesArray}
         />
         <input
+          maxLength={100}
           type="text"
           ref={inputRef}
           autoFocus={true}
@@ -330,20 +403,16 @@ export default function TypingSection({
               setUserTyped(e.target.value);
               if (
                 userTyped.trim() ===
-                textArray?.[lineNumRef.current][wordIndexRef.current]
+                  textArray?.[lineNumRef.current][wordIndexRef.current] &&
+                keyPressedRef.current === " "
               ) {
                 incrementWordIndex();
                 setUserTyped("");
               }
             }
-            console.log("");
-            console.log(textArrayRef.current?.[lineNumRef.current]);
-            console.log(
-              textArrayRef.current?.[lineNumRef.current][wordIndexRef.current]
-            );
-            console.log("line number " + lineNumRef.current);
-            console.log("word index" + wordIndexRef.current);
-            console.log(textArray?.[lineNumRef.current].length);
+          }}
+          onKeyDown={(e) => {
+            keyPressedRef.current = e.key;
           }}
         />
       </div>
