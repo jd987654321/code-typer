@@ -1,11 +1,14 @@
 import { ReactElement, useState } from "react";
 import { menu, menuOpener } from "@/assets/menu";
+import { useTimerContext } from "@/context/TimerProvider";
 
+import useUserStore from "@/store/userStore";
 import useStore, { options } from "@/store/sidebarStore";
 import { DropdownButton } from "./DropdownButton";
 
 export default function Sidebar(): ReactElement {
   const {
+    languageOptions,
     setLanguage,
     setStyle,
     setFramework,
@@ -22,7 +25,10 @@ export default function Sidebar(): ReactElement {
   const includeFunctionDefinition = useStore(
     (state) => state.includeFunctionDefinition
   );
+  const { setTime } = useTimerContext();
   const problemType = useStore((state) => state.problemType);
+  const startingTime = useUserStore((state) => state.startingTime);
+  const { setStartingTime } = useUserStore();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -31,8 +37,7 @@ export default function Sidebar(): ReactElement {
   const [styleOpen, setStyleOpen] = useState<boolean>(false);
   const [frameworkOpen, setFrameworkOpen] = useState<boolean>(false);
   const [paradigmOpen, setParadigmOpen] = useState<boolean>(false);
-  const [importsOpen, setImportsOpen] = useState<boolean>(false);
-  const [functionOpen, setFunctionOpen] = useState<boolean>(false);
+
   const [problemTypeOpen, setProblemTypeOpen] = useState<boolean>(false);
   //so what is happened, the entire thing is getting rerender and so the thing probably gets ticked off
   //the entire component gets rerendered and then set to false by default
@@ -47,8 +52,6 @@ export default function Sidebar(): ReactElement {
       styleOpen ||
       frameworkOpen ||
       paradigmOpen ||
-      importsOpen ||
-      functionOpen ||
       problemTypeOpen
     );
   };
@@ -61,13 +64,14 @@ export default function Sidebar(): ReactElement {
     setStyleOpen(false);
     setFrameworkOpen(false);
     setParadigmOpen(false);
-    setImportsOpen(false);
-    setFunctionOpen(false);
     setProblemTypeOpen(false);
   };
 
   //right now it is just a div that expands
   //we want a div that stands alone, then an absolute div that pops into view when triggered
+
+  //we currently have the issue of there being no options in the dropdown
+  //console.log(languageOptions);
 
   return (
     <div className="border-x-[1px] z-10 border-vscode-outline1 text-vscode-text-bright font-normal font-vscodeText relative whitespace-nowrap h-full w-24  bg-vscode-primary">
@@ -87,15 +91,17 @@ export default function Sidebar(): ReactElement {
         {isOpen ? (
           <div className=" flex flex-col gap-2 mt-4">
             <div className="flex justify-between items-center">
-              <div className="text-xl select-none">Language</div>
+              <div className="text-xl select-none">Time</div>
               <DropdownButton
                 widthStyling="w-48"
-                options={options.languages}
-                currentOption={language}
-                setCurrentOption={setLanguage}
-                menuOpen={langOpen}
-                setMenuOpen={setLangOpen}
-                onSelect={() => setFramework("None")}
+                options={["15 seconds", "30 seconds", "60 seconds"]}
+                currentOption={startingTime.toString()}
+                setCurrentOption={(value) => {
+                  setStartingTime(parseInt(value));
+                  setTime(parseInt(value));
+                }}
+                menuOpen={timeOpen}
+                setMenuOpen={setTimeOpen}
               />
             </div>
             <div className="flex justify-between items-center">
@@ -109,16 +115,36 @@ export default function Sidebar(): ReactElement {
                 setMenuOpen={setStyleOpen}
               />
             </div>
+            <div className="flex justify-between items-center">
+              <div className="text-xl select-none">Language</div>
+              <DropdownButton
+                widthStyling="w-48"
+                options={options.languages}
+                currentOption={language}
+                setCurrentOption={(option) => {
+                  setFramework("None");
+                  setParadigm("Any");
+                  setLanguage(option);
+                }}
+                menuOpen={langOpen}
+                setMenuOpen={setLangOpen}
+                onSelect={() => setFramework("None")}
+              />
+            </div>
             {/* just need to conditionally render these based on which option  */}
             {style === "App Code" ? (
               <div className="mt-8 flex flex-col gap-2">
                 <div className="flex justify-between items-center gap-4">
                   <div className="text-sm select-none">Framework</div>
+
                   <DropdownButton
                     widthStyling="w-48"
-                    options={options.frameworks[language]}
+                    options={Object.keys(languageOptions[language])}
                     currentOption={framework}
-                    setCurrentOption={setFramework}
+                    setCurrentOption={(option) => {
+                      setParadigm("Any");
+                      setFramework(option);
+                    }}
                     menuOpen={frameworkOpen}
                     setMenuOpen={setFrameworkOpen}
                   />
@@ -127,33 +153,11 @@ export default function Sidebar(): ReactElement {
                   <div className="text-sm select-none">Paradigm</div>
                   <DropdownButton
                     widthStyling="w-48"
-                    options={options.paradigms}
+                    options={languageOptions[language][framework]}
                     currentOption={paradigm}
                     setCurrentOption={setParadigm}
                     menuOpen={paradigmOpen}
                     setMenuOpen={setParadigmOpen}
-                  />
-                </div>
-                <div className="flex justify-between items-center gap-4">
-                  <div className="text-sm select-none">Include Imports?</div>
-                  <DropdownButton
-                    widthStyling="w-32"
-                    options={options.yesOrNo}
-                    currentOption={includeImports}
-                    setCurrentOption={setIncludeImports}
-                    menuOpen={importsOpen}
-                    setMenuOpen={setImportsOpen}
-                  />
-                </div>
-                <div className="flex justify-between items-center gap-4">
-                  <div className="text-sm select-none">Function Headers?</div>
-                  <DropdownButton
-                    widthStyling="w-32"
-                    options={options.yesOrNo}
-                    currentOption={includeFunctionDefinition}
-                    setCurrentOption={setIncludeFunctionDefinition}
-                    menuOpen={functionOpen}
-                    setMenuOpen={setFunctionOpen}
                   />
                 </div>
               </div>
@@ -161,7 +165,7 @@ export default function Sidebar(): ReactElement {
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm select-none">Category</div>
                 <DropdownButton
-                  widthStyling="w-60"
+                  widthStyling="w-48"
                   options={options.problemTypes}
                   currentOption={problemType}
                   setCurrentOption={setProblemType}

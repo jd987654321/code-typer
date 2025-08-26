@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const languages: string[] = [
+export const languages: string[] = [
   "Java",
   "Python",
   "Rust",
@@ -12,39 +12,89 @@ const languages: string[] = [
   "Any",
 ] as const;
 
-const styles: string[] = ["App Code", "Leetcode", "Any"];
+export const styles: string[] = ["App Code", "Leetcode", "Any"];
 
+//depracated, just not sure if removing it would break my code
 const frameworks: Record<Languages, string[]> = {
   Java: ["Spring Boot", "Hibernate", "Jakarta EE", "None"],
   Python: ["Django", "Flask", "FastAPI", "None"],
   Rust: ["Actix Web", "Rocket", "Bevy", "Tauri", "None"],
   "C++": ["Qt", "Boost", "Unreal Engine", "None"],
   Go: ["Gin", "Fiber", "Echo", "Beego", "None"],
-  Typescript: ["Next.js", "Angular", "NestJS", "Remix", "None"],
-  Javascript: ["React", "Vue.js", "Next.js", "Express.js", "None"],
+  Typescript: ["React", "Vue", "Angular", "None"],
+  Javascript: ["React", "Vue", "Express.js", "None"],
   Any: ["Any"],
 } as const;
 
-const paradigms: string[] = ["Object-Oriented", "Functional", "Both"] as const;
+export const languageOptions: Record<Languages, Record<string, Paradigms[]>> = {
+  Java: {
+    Any: ["Any", "Object-Oriented", "Functional"],
+    None: ["Any", "Object-Oriented", "Functional"],
+    "Spring Boot": ["Any", "Object-Oriented", "Functional"],
+    Hibernate: ["Object-Oriented"],
+    "Jakarta EE": ["Any", "Object-Oriented", "Functional"],
+  },
+  Python: {
+    Any: ["Any", "Object-Oriented", "Functional"],
+    None: ["Any", "Object-Oriented", "Functional"],
+    Django: ["Any", "Object-Oriented", "Functional"],
+    Flask: ["Any", "Object-Oriented", "Functional"],
+    FastAPI: ["Any", "Object-Oriented", "Functional"],
+  },
+  Rust: {
+    Any: ["Any", "Object-Oriented", "Functional"],
+    None: ["Any", "Object-Oriented", "Functional"],
+    "Actix Web": ["Any", "Object-Oriented", "Functional"],
+    Rocket: ["Any", "Object-Oriented", "Functional"],
+    Bevy: ["Functional"],
+    Tauri: ["Any", "Object-Oriented", "Functional"],
+  },
+  "C++": {
+    Qt: ["Object-Oriented"],
+    Boost: ["Any", "Object-Oriented", "Functional"],
+    "Unreal Engine": ["Any", "Object-Oriented"],
+    None: ["Any", "Object-Oriented", "Functional"],
+    Any: ["Any", "Object-Oriented", "Functional"],
+  },
+  Go: {
+    Gin: ["Any", "Functional"],
+    Fiber: ["Any", "Functional"],
+    Echo: ["Any", "Functional"],
+    None: ["Any", "Functional"],
+    Any: ["Any", "Functional"],
+  },
+  Typescript: {
+    React: ["Any", "Object-Oriented", "Functional"],
+    Vue: ["Object-Oriented"],
+    Angular: ["Object-Oriented"],
+    None: ["Any", "Object-Oriented", "Functional"],
+    Any: ["Any", "Object-Oriented", "Functional"],
+  },
+  Javascript: {
+    React: ["Any", "Object-Oriented", "Functional"],
+    Vue: ["Object-Oriented"],
+    "Express.js": ["Functional"],
+    None: ["Any", "Object-Oriented", "Functional"],
+    Any: ["Any", "Object-Oriented", "Functional"],
+  },
+  Any: {
+    None: ["Any", "Object-Oriented", "Functional"],
+    Any: ["Any", "Object-Oriented", "Functional"],
+  },
+};
+
+const paradigms: string[] = ["Object-Oriented", "Functional", "Any"] as const;
 const yesOrNo: string[] = ["Yes", "No"] as const;
 const problemTypes: string[] = [
   "Any",
   "Two Pointers",
-  "Sliding Window",
-  "Hash Table",
   "Stack",
   "Queue",
-  "Linked List",
   "Tree",
   "Graph",
   "Heap",
-  "Math",
-  "Greedy",
-  "Sorting",
-  "Bit Manipulation",
-  "Dynamic Programming",
-  "Backtracking",
-  "Prefix Sum",
+  "Bits",
+  "DP",
 ] as const;
 
 export const options = {
@@ -61,9 +111,11 @@ export type Styles = (typeof styles)[number];
 export type YesOrNo = (typeof yesOrNo)[number];
 export type ProblemTypes = (typeof problemTypes)[number];
 export type Paradigms = (typeof paradigms)[number];
+export type LanguageOptions = Record<Languages, Record<string, Paradigms[]>>;
 
 type SideBarInfo = {
   language: Languages;
+  languageOptions: Record<Languages, Record<string, Paradigms[]>>;
   style: Styles;
   framework: string;
   paradigm: Paradigms;
@@ -83,6 +135,7 @@ export default create<SideBarInfo>()(
   persist(
     (set) => ({
       language: "Any",
+      languageOptions: languageOptions,
       style: "Any",
       framework: "Any",
       paradigm: "Any",
@@ -99,6 +152,17 @@ export default create<SideBarInfo>()(
         set({ includeFunctionDefinition: includeFunctionDefinition }),
       setProblemType: (problemType) => set({ problemType: problemType }),
     }),
-    { name: "sidebar-settings" }
+    {
+      name: "sidebar-settings",
+      partialize: (state) => ({
+        language: state.language,
+        style: state.style,
+        framework: state.framework,
+        paradigm: state.paradigm,
+        includeImports: state.includeImports,
+        includeFunctionDefinition: state.includeFunctionDefinition,
+        problemType: state.problemType,
+      }),
+    }
   )
 );

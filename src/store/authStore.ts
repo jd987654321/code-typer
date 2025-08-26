@@ -6,6 +6,6 @@ type authStore = {
 };
 
 export default create<authStore>((set, get) => ({
-  modalOpen: true,
+  modalOpen: false,
   toggleModal: () => set({ modalOpen: !get().modalOpen }),
 }));

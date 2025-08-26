@@ -35,10 +35,15 @@
 
 import { useState, useRef, useEffect, ReactElement, useMemo } from "react";
 import refreshButton from "../../assets/refresh.png";
+import useSidebarStore, {
+  languages,
+  languageOptions,
+} from "@/store/sidebarStore";
 import useAuthStore from "@/store/authStore";
 import useStore from "@/store/userStore";
 import parse, { domToReact, Element, DOMNode, Text } from "html-react-parser";
 import { useShallow } from "zustand/shallow";
+import { supabase } from "@/supabase/supabase";
 
 type Props = {
   ResetTimer: () => void;
@@ -65,30 +70,21 @@ export default function TypingSection({
   const {
     incrementWordIndex,
     incrementLineNum,
-    userTyped,
     setUserTyped,
-    spacesArray,
-    wordIndex,
     setText,
     setWordIndex,
-    lineNum,
     setLineNum,
-    textArray,
-  } = useStore(
-    useShallow((state) => ({
-      incrementWordIndex: state.incrementWordIndex,
-      incrementLineNum: state.incrementLineNum,
-      userTyped: state.userTyped,
-      setUserTyped: state.setUserTyped,
-      spacesArray: state.spacesArray,
-      wordIndex: state.wordIndex,
-      setText: state.setText,
-      setWordIndex: state.setWordIndex,
-      lineNum: state.lineNum,
-      setLineNum: state.setLineNum,
-      textArray: state.textArray,
-    }))
-  );
+  } = useStore();
+  const userTyped = useStore((state) => state.userTyped);
+  const spacesArray = useStore((state) => state.spacesArray);
+  const wordIndex = useStore((state) => state.wordIndex);
+  const lineNum = useStore((state) => state.lineNum);
+  const textArray = useStore((state) => state.textArray);
+
+  const language = useSidebarStore((state) => state.language);
+  const framework = useSidebarStore((state) => state.framework);
+  const paradigm = useSidebarStore((state) => state.paradigm);
+
   const modalOpen = useAuthStore((state) => state.modalOpen);
   const modalOpenRef = useRef(modalOpen);
 
@@ -100,6 +96,11 @@ export default function TypingSection({
   const textArrayRef = useRef<string[][] | null>(null);
   const spaceArrayRef = useRef<number[] | null>(null);
 
+  const randIntFrom1toN = (n: number): number =>
+    Math.floor(Math.random() * n) + 1;
+  const randIntFrom0toN = (n: number): number =>
+    Math.floor(Math.random() * n + 1);
+
   useEffect(() => {
     const focusText = () => {
       inputRef.current?.focus();
@@ -109,6 +110,7 @@ export default function TypingSection({
       if (!isActiveRef.current) {
         // console.log("this is running");
         // console.log("isActive: " + isActive);
+        console.log("should start timer now");
         setIsActive(true);
         StartTimer();
       }
@@ -126,10 +128,60 @@ export default function TypingSection({
   }, []);
 
   useEffect(() => {
-    setText(
-      'import { ReactElement } from "react";\ntype Props = {\n  recordedSpeed: boolean[];\n};\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  const [hok, setHok] = useState<number>(0);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n'
-    );
-  }, []);
+    //when when want to query from code, we are querying depending on the...
+    //language
+    //framework
+    //paradigm
+
+    //how do we handle the any options? we will make the selector random, since we know there are always 50
+    //pieces of code we will
+    async function fetchCode() {
+      let currentLanguage = language;
+      let currentFramework = framework;
+      let currentParadigm = paradigm;
+
+      if (currentLanguage === "Any")
+        currentLanguage = languages[randIntFrom0toN(languages.length - 1)];
+      if (currentFramework === "Any") {
+        let frameworkArray = Object.keys(languageOptions[currentLanguage]);
+        currentFramework =
+          frameworkArray[randIntFrom0toN(frameworkArray.length - 1)];
+      }
+      if (currentParadigm === "Any") {
+        let paradigmOptions = languageOptions[currentLanguage][currentParadigm];
+        currentParadigm =
+          paradigmOptions[randIntFrom0toN(paradigmOptions.length - 1)];
+      }
+
+      const { data, error } = await supabase
+        .from("code")
+        .select("*")
+        .eq("language", currentLanguage.toLowerCase())
+        .eq("framework", currentFramework.toLowerCase())
+        .eq("paradigm", currentParadigm)
+        .eq("numberID", randIntFrom1toN(50));
+
+      // setText(
+      //   //'import { ReactElement } from "react";\n\ntype Props = {\n  recordedSpeed: boolean[];\n};\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  const [hok, setHok] = useState<number>(0);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n'
+      //   '@SpringBootApplication\npublic class StreamService {\n public static void main(String[] args) {\n SpringApplication.run(StreamService.class, args);\n }\n @Bean\n public RouterFunction<ServerResponse> routes() {\n return RouterFunctions.route()\n .GET("/prime", request -> handlePrime())\n .POST("/compute", this::compute)\n .build();\n }\n private Mono<ServerResponse> handlePrime() {\n return ServerResponse.ok().body(primes(), Integer.class);\n }\n private Flux<Integer> primes() {\n return Flux.range(2, 1000)\n .filter(this::isPrime);\n }\n private boolean isPrime(int n) {\n return IntStream.rangeClosed(2, (int)Math.sqrt(n))\n .allMatch(i -> n % i != 0);\n }\n private Mono<ServerResponse> compute(ServerRequest req) {\n return req.bodyToMono(Operation.class)\n .map(this::apply)\n .flatMap(r -> ServerResponse.ok().bodyValue(r));\n }\n private double apply(Operation op) {\n return switch(op.type()) {\n case ADD -> op.a() + op.b();\n case SUB -> op.a() - op.b();\n case MUL -> op.a() * op.b();\n case DIV -> op.b() == 0 ? Double.NaN : op.a() / op.b();\n };\n }\n private final Supplier<Flux<Long>> timer = () ->\n Flux.interval(Duration.ofSeconds(1));\n public Flux<String> ticks() {\n return timer.get()\n .map(Object::toString)\n .map(s -> "tick-" + s);\n }\n private final Function<String, String> echo = s -> "echo:" + s;\n private final Predicate<Integer> even = n -> n % 2 == 0;\n public Flux<Integer> doubledPrimes() {\n return primes()\n .filter(even)\n .map(i -> i * 2);\n }\n public Mono<String> echoMono(String input) {\n return Mono.just(input)\n .map(echo);\n }\n public Flux<String> streamLines(Path file) {\n return DataBufferUtils.read(file, 4096)\n .map(buf -> buf.toString(StandardCharsets.UTF_8))\n .flatMapMany(s -> Flux.fromArray(s.split("\\n")));\n }\n public Mono<Long> countWords(Path file) {\n return streamLines(file)\n .flatMap(line -> Flux.fromArray(line.split("\\s+")))\n .count();\n }\n public Mono<Void> logEveryTick() {\n return ticks()\n .doOnNext(System.out::println)\n .then();\n }\n public Flux<Long> fibonacci(long bound) {\n return Flux.iterate(new long[]{0, 1},\n arr -> arr[0] + arr[1] < bound,\n arr -> new long[]{arr[1], arr[0] + arr[1]})\n .map(arr -> arr[0]);\n }\n public Mono<List<Integer>> randomSample(int size) {\n return Flux.range(0, size)\n .map(i -> ThreadLocalRandom.current().nextInt())\n .collectList();\n }\n public Supplier<Mono<Long>> primeCountSupplier() {\n return () -> primes().count();\n }\n public Mode parseMode(String s) {\n return Mode.valueOf(s.toUpperCase());\n }\n private String format(double v) {\n return String.format("%.2f", v);\n }\n public record Operation(String type, double a, double b) {}\n public enum Mode { ADD, SUB, MUL, DIV }\n}'
+      // );
+
+      if (!data)
+        throw new Error(
+          "Could not fetch any code with the following properties, language: " +
+            currentLanguage +
+            " framework: " +
+            currentFramework +
+            " paradigm: " +
+            currentParadigm
+        );
+
+      //console.log(data);
+      setText(data[0].code_block);
+    }
+
+    fetchCode();
+  }, [language, framework, paradigm]);
 
   useEffect(() => {
     modalOpenRef.current = modalOpen;
@@ -162,7 +214,9 @@ export default function TypingSection({
     return " "
       .repeat(spaces)
       .split("")
-      .map((value, index) => <span key={value + index}>{`  `}</span>);
+      .map((value, index) => (
+        <span key={value + index + "extraSpaces"}>{`  `}</span>
+      ));
   };
 
   const RenderCurrentWord = ({
@@ -197,13 +251,19 @@ export default function TypingSection({
 
         if (index >= text.length) {
           return (
-            <span key={value + index} className={`${textColor}`}>
+            <span
+              key={value + index + "currentWord"}
+              className={`${textColor}`}
+            >
               {value}
             </span>
           );
         } else {
           return (
-            <span key={value + index} className={`${textColor}`}>
+            <span
+              key={value + index + "currentWord"}
+              className={`${textColor}`}
+            >
               {text[index]}
             </span>
           );
@@ -212,9 +272,6 @@ export default function TypingSection({
     } else {
       return (text + " ").split("").map((value, index) => {
         let textColor = "";
-        if (index == userTyped.length) {
-          console.log("second half");
-        }
 
         if (index >= userTyped.length) {
           textColor = "text-gray-700";
@@ -259,9 +316,9 @@ export default function TypingSection({
     return (
       <div className="whitespace-pre">
         {createSpaces(spaces)}
-        {arrayOfWords.map((value) => (
+        {arrayOfWords.map((value, index) => (
           <span
-            key={value.toString()}
+            key={value.toString() + index + "typedLine"}
             className="text-white"
           >{`${value} `}</span>
         ))}
@@ -273,9 +330,9 @@ export default function TypingSection({
     return (
       <div className="whitespace-pre">
         {createSpaces(spaces)}
-        {arrayOfWords.map((value) => (
+        {arrayOfWords.map((value, index) => (
           <span
-            key={value.toString()}
+            key={value.toString() + index + "untypedLine"}
             className="text-gray-700"
           >{`${value} `}</span>
         ))}
@@ -293,7 +350,7 @@ export default function TypingSection({
       <div className="whitespace-pre">
         {createSpaces(spaces)}
         {arrayOfWords.map((value, index) => {
-          const key = value.toString() + index;
+          const key = value.toString() + index + "currentLine";
           if (index < currentWordIndex) {
             return <span key={key} className="text-white">{`${value} `}</span>;
           } else if (index > currentWordIndex) {
@@ -329,13 +386,13 @@ export default function TypingSection({
     spacesArray: number[] | null;
   }) => {
     return (
-      <div className="w-[700px] border-green-400 border-2 overflow-hidden">
+      <div className="w-[700px overflow-hidden">
         <div
           style={{
             //40 comes from space between and span height, 24 and 16 respectively
             transform: `translateY(-${(24 + 0) * lineNum}px)`,
           }}
-          className="border-red-500 border-2 transition-transform duration-300"
+          className="transition-transform duration-300"
         >
           {!formattedTextArray || !spacesArray ? (
             <div>Loading...</div>

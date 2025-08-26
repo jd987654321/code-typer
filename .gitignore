@@ -27,3 +27,6 @@ dist-ssr
 
 .vscode
 .vercel
+
+api/generatingCode/
+api/supabase/supabase.js
