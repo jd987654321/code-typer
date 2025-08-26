@@ -85,7 +85,7 @@ export const languageOptions: Record<Languages, Record<string, Paradigms[]>> = {
 
 const paradigms: string[] = ["Object-Oriented", "Functional", "Any"] as const;
 const yesOrNo: string[] = ["Yes", "No"] as const;
-const problemTypes: string[] = [
+export const problemTypes: string[] = [
   "Any",
   "Two Pointers",
   "Stack",

@@ -110,7 +110,12 @@ export default function Sidebar(): ReactElement {
                 widthStyling="w-48"
                 options={options.styles}
                 currentOption={style}
-                setCurrentOption={(option) => setStyle(option)}
+                setCurrentOption={(option) => {
+                  setStyle(option);
+                  setFramework("Any");
+                  setParadigm("Any");
+                  setProblemType("Any");
+                }}
                 menuOpen={styleOpen}
                 setMenuOpen={setStyleOpen}
               />

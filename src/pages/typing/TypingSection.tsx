@@ -36,6 +36,7 @@
 import { useState, useRef, useEffect, ReactElement, useMemo } from "react";
 import refreshButton from "../../assets/refresh.png";
 import useSidebarStore, {
+  problemTypes,
   languages,
   languageOptions,
 } from "@/store/sidebarStore";
@@ -81,9 +82,11 @@ export default function TypingSection({
   const lineNum = useStore((state) => state.lineNum);
   const textArray = useStore((state) => state.textArray);
 
+  const style = useSidebarStore((state) => state.style);
   const language = useSidebarStore((state) => state.language);
   const framework = useSidebarStore((state) => state.framework);
   const paradigm = useSidebarStore((state) => state.paradigm);
+  const problemType = useSidebarStore((state) => state.problemType);
 
   const modalOpen = useAuthStore((state) => state.modalOpen);
   const modalOpenRef = useRef(modalOpen);
@@ -135,7 +138,39 @@ export default function TypingSection({
 
     //how do we handle the any options? we will make the selector random, since we know there are always 50
     //pieces of code we will
-    async function fetchCode() {
+    async function fetchLeetcodeCode() {
+      let currentLanguage = language;
+      let currentProblemType = problemType;
+
+      if (currentLanguage === "Any")
+        currentLanguage = languages[randIntFrom0toN(languages.length - 1)];
+      if (currentProblemType === "Any")
+        currentProblemType =
+          problemTypes[randIntFrom0toN(problemTypes.length - 1)];
+
+      const { data, error } = await supabase
+        .from("leetcode_code")
+        .select("*")
+        .eq("language", currentLanguage.toLowerCase())
+        .eq("category", currentProblemType)
+        .eq("numberID", randIntFrom1toN(50));
+
+      if (!data)
+        throw new Error(
+          "Could not fetch any code with the following properties, language: " +
+            currentLanguage +
+            " category: " +
+            currentProblemType +
+            " " +
+            error
+        );
+
+      console.log(data);
+
+      setText(data[0].code_block);
+    }
+
+    async function fetchAppCode() {
       let currentLanguage = language;
       let currentFramework = framework;
       let currentParadigm = paradigm;
@@ -180,8 +215,18 @@ export default function TypingSection({
       setText(data[0].code_block);
     }
 
-    fetchCode();
-  }, [language, framework, paradigm]);
+    console.log(style);
+
+    if (style === "App Code") {
+      fetchAppCode();
+    } else if (style === "Leetcode") {
+      fetchLeetcodeCode();
+    } else
+      throw new Error(
+        "The style variable should be either 'App Code' or 'Leetcode', it is currently: " +
+          style
+      );
+  }, [language, framework, paradigm, style]);
 
   useEffect(() => {
     modalOpenRef.current = modalOpen;
