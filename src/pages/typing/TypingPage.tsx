@@ -18,13 +18,24 @@ export default function TypingPage(): ReactElement {
   const [isActive, setIsActive] = useState(false);
   const timerSeconds = useRef(startingTime);
 
+  const resetTypingPage = () => {
+    setTime(startingTime);
+    setCanType(true);
+    setIsActive(false);
+    setUserTyped("");
+    setLineNum(0);
+    setWordIndex(0);
+  };
+
   useEffect(() => {
     timerSeconds.current = startingTime;
   }, [startingTime]);
 
-  //what happens if we finish the
-  //isActive hook is just used to see if the timer has been activated
-  //canType hook
+  useEffect(() => {
+    if (time == 0) {
+      resetTypingPage();
+    }
+  }, [time]);
 
   return (
     <>
@@ -33,13 +44,7 @@ export default function TypingPage(): ReactElement {
 
         <button
           onClick={() => {
-            setTime(startingTime);
-            setCanType(true);
-            setIsActive(false);
-            setUserTyped("");
-            setLineNum(0);
-            setWordIndex(0);
-            //console.log(startingTime);
+            resetTypingPage();
           }}
         >
           Reset

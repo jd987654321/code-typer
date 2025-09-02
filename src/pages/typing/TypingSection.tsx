@@ -101,8 +101,11 @@ export default function TypingSection({
 
   const randIntFrom1toN = (n: number): number =>
     Math.floor(Math.random() * n) + 1;
-  const randIntFrom0toN = (n: number): number =>
-    Math.floor(Math.random() * n + 1);
+  const randIntFrom0toN = (n: number): number => {
+    //when n is zero, this always returns 1
+    if (n == 0) return 0;
+    return Math.floor(Math.random() * n + 1);
+  };
 
   useEffect(() => {
     const focusText = () => {
@@ -132,16 +135,18 @@ export default function TypingSection({
       let currentLanguage = language;
       let currentProblemType = problemType;
 
-      if (currentLanguage === "Any")
-        currentLanguage = languages[randIntFrom0toN(languages.length - 1)];
-      if (currentProblemType === "Any")
+      if (currentLanguage === "Any") {
+        let languageArray = languages.filter((value) => value !== "Any");
+        currentLanguage =
+          languageArray[randIntFrom0toN(languageArray.length - 1)];
+      }
+      if (currentProblemType === "Any") {
+        let problemTypeArray = problemTypes.filter((value) => value !== "Any");
         currentProblemType =
-          problemTypes[randIntFrom0toN(problemTypes.length - 1)];
+          problemTypeArray[randIntFrom0toN(problemTypeArray.length - 1)];
+      }
 
       let n = randIntFrom1toN(50);
-
-      console.log("leetcode language: " + currentLanguage);
-      console.log("type: " + currentProblemType);
 
       const { data, error } = await supabase
         .from("code")
@@ -151,7 +156,7 @@ export default function TypingSection({
         .eq("leetcode_category", currentProblemType)
         .eq("numberID", n);
 
-      if (!data)
+      if (!data || !data[0])
         throw new Error(
           "Could not fetch any code with the following properties, language: " +
             currentLanguage +
@@ -169,25 +174,28 @@ export default function TypingSection({
       let currentFramework = framework;
       let currentParadigm = paradigm;
 
-      if (currentLanguage === "Any")
-        currentLanguage = languages[randIntFrom0toN(languages.length - 1)];
+      if (currentLanguage === "Any") {
+        let languageArray = languages.filter((value) => value !== "Any");
+        currentLanguage =
+          languageArray[randIntFrom0toN(languageArray.length - 1)];
+        currentLanguage = "Go";
+      }
       if (currentFramework === "Any") {
-        let frameworkArray = Object.keys(languageOptions[currentLanguage]);
+        let frameworkArray = Object.keys(
+          languageOptions[currentLanguage]
+        ).filter((value) => value !== "Any");
         currentFramework =
           frameworkArray[randIntFrom0toN(frameworkArray.length - 1)];
       }
       if (currentParadigm === "Any") {
-        let paradigmOptions = languageOptions[currentLanguage][currentParadigm];
-        currentParadigm =
-          paradigmOptions[randIntFrom0toN(paradigmOptions.length - 1)];
+        let paradigmOptions = languageOptions[currentLanguage][
+          currentParadigm
+        ].filter((value) => value !== "Any");
+        let n = randIntFrom0toN(paradigmOptions.length - 1);
+        currentParadigm = paradigmOptions[n];
       }
 
       let n = randIntFrom1toN(50);
-
-      console.log("language: " + currentLanguage);
-      console.log("framework: " + currentFramework);
-      console.log("paradigm: " + currentParadigm);
-      console.log("random number: " + n);
 
       const { data, error } = await supabase
         .from("code")
@@ -198,7 +206,7 @@ export default function TypingSection({
         .eq("paradigm", currentParadigm)
         .eq("numberID", n);
 
-      if (!data)
+      if (!data || !data[0])
         throw new Error(
           "Could not fetch any code with the following properties, language: " +
             currentLanguage +
