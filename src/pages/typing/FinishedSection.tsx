@@ -1,10 +1,5 @@
 import { ReactElement } from "react";
 import useStore from "../../store/userStore";
-import { useShallow } from "zustand/shallow";
-
-type Props = {
-  recordedSpeed: boolean[];
-};
 
 export default function FinishedSection(): ReactElement {
   const { latestWPM, lineNum, wordIndex, textArray } = useStore();

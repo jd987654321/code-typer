@@ -46,7 +46,6 @@ export default function LogoElement({
     rust: rustLogo,
     vue: vueLogo,
   };
-  console.log(size);
 
   return (
     <img

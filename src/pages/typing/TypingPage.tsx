@@ -39,7 +39,7 @@ export default function TypingPage(): ReactElement {
             setUserTyped("");
             setLineNum(0);
             setWordIndex(0);
-            console.log(startingTime);
+            //console.log(startingTime);
           }}
         >
           Reset

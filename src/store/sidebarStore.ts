@@ -16,7 +16,7 @@ export const styles: string[] = ["App Code", "Leetcode", "Any"];
 
 //depracated, just not sure if removing it would break my code
 const frameworks: Record<Languages, string[]> = {
-  Java: ["Spring Boot", "Hibernate", "Jakarta EE", "None"],
+  Java: ["Spring Boot", "Hibernate", "Jakarta", "None"],
   Python: ["Django", "Flask", "FastAPI", "None"],
   Rust: ["Actix Web", "Rocket", "Bevy", "Tauri", "None"],
   "C++": ["Qt", "Boost", "Unreal Engine", "None"],
@@ -32,7 +32,7 @@ export const languageOptions: Record<Languages, Record<string, Paradigms[]>> = {
     None: ["Any", "Object-Oriented", "Functional"],
     "Spring Boot": ["Any", "Object-Oriented", "Functional"],
     Hibernate: ["Object-Oriented"],
-    "Jakarta EE": ["Any", "Object-Oriented", "Functional"],
+    Jakarta: ["Any", "Object-Oriented", "Functional"],
   },
   Python: {
     Any: ["Any", "Object-Oriented", "Functional"],
@@ -73,7 +73,7 @@ export const languageOptions: Record<Languages, Record<string, Paradigms[]>> = {
   Javascript: {
     React: ["Any", "Object-Oriented", "Functional"],
     Vue: ["Object-Oriented"],
-    "Express.js": ["Functional"],
+    Express: ["Functional"],
     None: ["Any", "Object-Oriented", "Functional"],
     Any: ["Any", "Object-Oriented", "Functional"],
   },

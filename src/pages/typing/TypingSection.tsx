@@ -111,9 +111,6 @@ export default function TypingSection({
 
     const startTimer = () => {
       if (!isActiveRef.current) {
-        // console.log("this is running");
-        // console.log("isActive: " + isActive);
-        console.log("should start timer now");
         setIsActive(true);
         StartTimer();
       }
@@ -131,13 +128,6 @@ export default function TypingSection({
   }, []);
 
   useEffect(() => {
-    //when when want to query from code, we are querying depending on the...
-    //language
-    //framework
-    //paradigm
-
-    //how do we handle the any options? we will make the selector random, since we know there are always 50
-    //pieces of code we will
     async function fetchLeetcodeCode() {
       let currentLanguage = language;
       let currentProblemType = problemType;
@@ -148,12 +138,18 @@ export default function TypingSection({
         currentProblemType =
           problemTypes[randIntFrom0toN(problemTypes.length - 1)];
 
+      let n = randIntFrom1toN(50);
+
+      console.log("leetcode language: " + currentLanguage);
+      console.log("type: " + currentProblemType);
+
       const { data, error } = await supabase
-        .from("leetcode_code")
+        .from("code")
         .select("*")
+        .eq("style", "Leetcode")
         .eq("language", currentLanguage.toLowerCase())
-        .eq("category", currentProblemType)
-        .eq("numberID", randIntFrom1toN(50));
+        .eq("leetcode_category", currentProblemType)
+        .eq("numberID", n);
 
       if (!data)
         throw new Error(
@@ -164,8 +160,6 @@ export default function TypingSection({
             " " +
             error
         );
-
-      console.log(data);
 
       setText(data[0].code_block);
     }
@@ -188,18 +182,21 @@ export default function TypingSection({
           paradigmOptions[randIntFrom0toN(paradigmOptions.length - 1)];
       }
 
+      let n = randIntFrom1toN(50);
+
+      console.log("language: " + currentLanguage);
+      console.log("framework: " + currentFramework);
+      console.log("paradigm: " + currentParadigm);
+      console.log("random number: " + n);
+
       const { data, error } = await supabase
         .from("code")
         .select("*")
+        .eq("style", "App Code")
         .eq("language", currentLanguage.toLowerCase())
         .eq("framework", currentFramework.toLowerCase())
         .eq("paradigm", currentParadigm)
-        .eq("numberID", randIntFrom1toN(50));
-
-      // setText(
-      //   //'import { ReactElement } from "react";\n\ntype Props = {\n  recordedSpeed: boolean[];\n};\nexport default function FinishedSection({\n  recordedSpeed,\n}: Props): ReactElement {\n  console.log(recordedSpeed);\n  const [hok, setHok] = useState<number>(0);\n  return (\n    <div>\n      <p>Nice job ur done now :D</p>\n      <p>Result: {recordedSpeed.filter(Boolean).length} WPM</p>\n    </div>\n  );\n}\n'
-      //   '@SpringBootApplication\npublic class StreamService {\n public static void main(String[] args) {\n SpringApplication.run(StreamService.class, args);\n }\n @Bean\n public RouterFunction<ServerResponse> routes() {\n return RouterFunctions.route()\n .GET("/prime", request -> handlePrime())\n .POST("/compute", this::compute)\n .build();\n }\n private Mono<ServerResponse> handlePrime() {\n return ServerResponse.ok().body(primes(), Integer.class);\n }\n private Flux<Integer> primes() {\n return Flux.range(2, 1000)\n .filter(this::isPrime);\n }\n private boolean isPrime(int n) {\n return IntStream.rangeClosed(2, (int)Math.sqrt(n))\n .allMatch(i -> n % i != 0);\n }\n private Mono<ServerResponse> compute(ServerRequest req) {\n return req.bodyToMono(Operation.class)\n .map(this::apply)\n .flatMap(r -> ServerResponse.ok().bodyValue(r));\n }\n private double apply(Operation op) {\n return switch(op.type()) {\n case ADD -> op.a() + op.b();\n case SUB -> op.a() - op.b();\n case MUL -> op.a() * op.b();\n case DIV -> op.b() == 0 ? Double.NaN : op.a() / op.b();\n };\n }\n private final Supplier<Flux<Long>> timer = () ->\n Flux.interval(Duration.ofSeconds(1));\n public Flux<String> ticks() {\n return timer.get()\n .map(Object::toString)\n .map(s -> "tick-" + s);\n }\n private final Function<String, String> echo = s -> "echo:" + s;\n private final Predicate<Integer> even = n -> n % 2 == 0;\n public Flux<Integer> doubledPrimes() {\n return primes()\n .filter(even)\n .map(i -> i * 2);\n }\n public Mono<String> echoMono(String input) {\n return Mono.just(input)\n .map(echo);\n }\n public Flux<String> streamLines(Path file) {\n return DataBufferUtils.read(file, 4096)\n .map(buf -> buf.toString(StandardCharsets.UTF_8))\n .flatMapMany(s -> Flux.fromArray(s.split("\\n")));\n }\n public Mono<Long> countWords(Path file) {\n return streamLines(file)\n .flatMap(line -> Flux.fromArray(line.split("\\s+")))\n .count();\n }\n public Mono<Void> logEveryTick() {\n return ticks()\n .doOnNext(System.out::println)\n .then();\n }\n public Flux<Long> fibonacci(long bound) {\n return Flux.iterate(new long[]{0, 1},\n arr -> arr[0] + arr[1] < bound,\n arr -> new long[]{arr[1], arr[0] + arr[1]})\n .map(arr -> arr[0]);\n }\n public Mono<List<Integer>> randomSample(int size) {\n return Flux.range(0, size)\n .map(i -> ThreadLocalRandom.current().nextInt())\n .collectList();\n }\n public Supplier<Mono<Long>> primeCountSupplier() {\n return () -> primes().count();\n }\n public Mode parseMode(String s) {\n return Mode.valueOf(s.toUpperCase());\n }\n private String format(double v) {\n return String.format("%.2f", v);\n }\n public record Operation(String type, double a, double b) {}\n public enum Mode { ADD, SUB, MUL, DIV }\n}'
-      // );
+        .eq("numberID", n);
 
       if (!data)
         throw new Error(
@@ -211,21 +208,21 @@ export default function TypingSection({
             currentParadigm
         );
 
-      //console.log(data);
       setText(data[0].code_block);
     }
-
-    console.log(style);
 
     if (style === "App Code") {
       fetchAppCode();
     } else if (style === "Leetcode") {
       fetchLeetcodeCode();
-    } else
-      throw new Error(
-        "The style variable should be either 'App Code' or 'Leetcode', it is currently: " +
-          style
-      );
+    } else {
+      const randomNum0or1 = Math.floor(Math.random() * 2);
+      if (randomNum0or1 === 1) {
+        fetchLeetcodeCode();
+      } else {
+        fetchAppCode();
+      }
+    }
   }, [language, framework, paradigm, style]);
 
   useEffect(() => {
@@ -282,9 +279,6 @@ export default function TypingSection({
     if (userTyped.length > text.length) {
       return (userTyped + " ").split("").map((value, index) => {
         let textColor = "";
-        if (index == userTyped.length) {
-          console.log("first half");
-        }
 
         if (index >= text.length) {
           textColor = "text-red-950";

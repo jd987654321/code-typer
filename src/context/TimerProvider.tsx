@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, PropsWithChildren } from "react";
+import { createContext, useContext, PropsWithChildren, useEffect } from "react";
+import useUserStore from "@/store/userStore";
 import { useTimer } from "react-timer-hook";
 
 type TimerContext = {
@@ -11,6 +12,12 @@ type TimerContext = {
 export const TimerContext = createContext<TimerContext | null>(null);
 
 export default function TimerProvider({ children }: PropsWithChildren) {
+  const startingTime = useUserStore((state) => state.startingTime);
+
+  useEffect(() => {
+    setTime(startingTime);
+  }, []);
+
   const secondsToDate = (seconds: number) => {
     const date = new Date();
     date.setSeconds(date.getSeconds() + seconds);
@@ -26,6 +33,7 @@ export default function TimerProvider({ children }: PropsWithChildren) {
   });
 
   const setTime = (seconds: number) => {
+    console.log("set the time rq");
     restart(secondsToDate(seconds), false);
   };
 
@@ -33,7 +41,7 @@ export default function TimerProvider({ children }: PropsWithChildren) {
     <TimerContext.Provider
       value={{
         startTimer: () => {
-          console.log("we are in provider function");
+          //console.log("we are in provider function");
           start();
         },
         time: totalSeconds,
@@ -41,7 +49,6 @@ export default function TimerProvider({ children }: PropsWithChildren) {
         setTime: setTime,
       }}
     >
-      <button onClick={start}>click here</button>
       {children}
     </TimerContext.Provider>
   );
