@@ -126,8 +126,29 @@ export default function TypingSection({
       }
     };
 
+    const preventSpaceKeyDefault = (event: KeyboardEvent) => {
+      if (event.key === "Enter") {
+        console.log("enter clicked");
+        event.preventDefault();
+        keyPressedRef.current = "enter";
+        if (
+          userTyped.trim() ===
+            textArray?.[lineNumRef.current][wordIndexRef.current] &&
+          wordIndexRef.current >= textArray?.[lineNumRef.current].length - 1
+        ) {
+          console.log("should trigger");
+          incrementWordIndex();
+          setUserTyped("");
+        }
+      }
+    };
+
     document.addEventListener("keydown", handleKeydown);
-    return () => document.removeEventListener("keydown", handleKeydown);
+    inputRef.current?.addEventListener("keydown", preventSpaceKeyDefault);
+    return () => {
+      document.removeEventListener("keydown", handleKeydown);
+      inputRef.current?.removeEventListener("keydown", preventSpaceKeyDefault);
+    };
   }, []);
 
   useEffect(() => {
@@ -206,14 +227,18 @@ export default function TypingSection({
         .eq("paradigm", currentParadigm)
         .eq("numberID", n);
 
+      if (error) console.error(error);
+
       if (!data || !data[0])
         throw new Error(
           "Could not fetch any code with the following properties, language: " +
-            currentLanguage +
+            currentLanguage.toLowerCase() +
             " framework: " +
-            currentFramework +
+            currentFramework.toLowerCase() +
             " paradigm: " +
-            currentParadigm
+            currentParadigm +
+            " n: " +
+            n
         );
 
       setText(data[0].code_block);
@@ -504,6 +529,7 @@ export default function TypingSection({
           value={userTyped}
           onChange={(e) => {
             if (canType) {
+              console.log("input element log");
               setUserTyped(e.target.value);
               if (
                 userTyped.trim() ===

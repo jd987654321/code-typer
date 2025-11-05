@@ -6,6 +6,7 @@ import {
   IoIosCheckmarkCircleOutline,
   IoIosCloseCircleOutline,
 } from "react-icons/io";
+import { supabase } from "@/supabase/supabase";
 
 export default function LoginModal() {
   const [email, setEmail] = useState("");
@@ -22,6 +23,18 @@ export default function LoginModal() {
   const [meetsSymbolRequirement, setMeetsSymbolRequirement] = useState(false);
   const [meetsNumRequirement, setMeetsNumRequirement] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(false);
+
+  const login = async () => {
+    const {data, error} = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    if(error){
+      
+    }
+
+  };
 
   const checkReqs = () => {
     setPasswordsMatch(signupPassword === reSignupPassword && !!signupPassword);
@@ -68,6 +81,9 @@ export default function LoginModal() {
         width: "500px",
       }}
       className="font-vscodeText py-8 rounded-2xl transition-all duration-500 ease-out flex flex-col items-center bg-vscode-background w-[400px] h-[600px] text-white"
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
     >
       {loginOrSignUp === "login" ? (
         <>
@@ -105,7 +121,10 @@ export default function LoginModal() {
             </div>
             <button className="text-blue-600 text-sm">Forget Password?</button>
           </div>
-          <button className="border-2 border-vscode-outline1 py-3 px-6 text-lg mb-8">
+          <button
+            className="border-2 border-vscode-outline1 py-3 px-6 text-lg mb-8"
+            onClick={login}
+          >
             Sign in
           </button>
           <button className="border-2 border-vscode-outline1 flex justify-around items-center px-4 py-4 gap-4 text-lg mb-4">

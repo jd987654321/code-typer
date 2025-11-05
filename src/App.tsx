@@ -18,19 +18,22 @@ import useAuthStore from "@/store/authStore";
 
 import "./index.css";
 import "./assets/fonts/fonts.css";
+import InfoPage from "./pages/info/InfoPage";
 
 export default function App(): ReactElement {
   const modalOpen = useAuthStore((state) => state.modalOpen);
+  const { toggleModal } = useAuthStore();
 
   return (
     <BrowserRouter>
       <TimerProvider>
         <div className="flex flex-col w-screen h-screen relative bg-vscode-background">
-          {/* <div
-          className={`${modalOpen ? "" : "hidden"} absolute flex justify-center items-center w-screen h-screen bg-[rgba(0,0,0,0.6)] z-20`}
-        >
-          <LoginModal />
-        </div> */}
+          <div
+            className={`${modalOpen ? "" : "hidden"} absolute flex justify-center items-center w-screen h-screen bg-[rgba(0,0,0,0.6)] z-20`}
+            onClick={toggleModal}
+          >
+            <LoginModal />
+          </div>
           <div className="text-white bg-vscode-primary border-[1px] border-vscode-outline1 h-12 w-screen flex justify-center items-center">
             <div className="h-7 w-1/2 bg-vscode-secondary border-[1px] border-vscode-outline1 rounded-lg flex justify-center items-center">
               <p className="text-sm">Typing Some Code</p>
@@ -43,7 +46,7 @@ export default function App(): ReactElement {
               <Routes>
                 <Route path="/" element={<TypingPage />} />
                 <Route path="/stats" element={<AccountPage />} />
-                <Route path="/account" element={<AccountPage />} />
+                <Route path="/account" element={<InfoPage />} />
                 {/* <Route path="login" element={<LoginPage />} /> */}
               </Routes>
             </div>

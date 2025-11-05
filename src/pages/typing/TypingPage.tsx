@@ -33,7 +33,9 @@ export default function TypingPage(): ReactElement {
 
   useEffect(() => {
     if (time == 0) {
+      calculateWPM(startingTime);
       resetTypingPage();
+      setCanType(false);
     }
   }, [time]);
 

@@ -65,19 +65,6 @@ export default function LoginPage(): ReactElement {
       password: password,
     });
 
-    // const uniqueAvatar: string = avatars[Math.floor(Math.random() * 6)];
-    // const uniqueUser: string = createUniqueUsername();
-    // const currentDate: Date = new Date();
-
-    // const { data: userData, error: userError } = await supabase.auth.getUser();
-
-    // const { error: queryError } = await supabase.from("user_profiles").insert({
-    //   id: userData.user!.id,
-    //   avatar: uniqueAvatar,
-    //   username: uniqueUser,
-    //   created_at: currentDate.toISOString(),
-    // });
-
     console.log(data.user + " " + error);
   };
 
