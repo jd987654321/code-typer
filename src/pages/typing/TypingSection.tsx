@@ -1,39 +1,10 @@
-/**
- * ? CUSTOM RENDERING NOTES
- *  Have an array of words, split by spaces, even for things inside brackets
- *  and a single variable to keep track of the word we are at
- *
- * element renderWords to handle the words
- * element renderCurrentWord to handle the current word
- *
- * currentWordIndex
- *
- * render Words will go thru our array of words, if index !== currentWordIndex, greater -> gray, less -> white
- *
- * renderCurrentWord will break down the word into a bunch of divs, match each letter of the typed word to a
- * letter in the word, if the word is severly mismatched, then we can display a little dropdown with the word they've typed
- *
- *
- */
-
-/**
- * ? Future integrations with shiki
- * keep an array of all the colors of every single letters or space, this way we can just color each span for each
- */
-
-/**
- * ? WPM NOTES
- *
- * how tf does our text rendering work here, so textArr holds a true or false for each word
- * i think the word in the input box gets matched to the letters here
- *
- * so in order to calculate the numbers of letters typed correctly, we can grab the words that are true, and
- * then add (num of words -1) spaces, we also include the number of letters correctly typed out in the input text
- *
- * we also need to account for raw wpm as well, since that might be a cool amount
- */
-
-import { useState, useRef, useEffect, ReactElement, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  ReactElement,
+  useMemo,
+} from "react";
 import refreshButton from "../../assets/refresh.png";
 import useSidebarStore, {
   problemTypes,
@@ -43,6 +14,7 @@ import useSidebarStore, {
 import useAuthStore from "@/store/authStore";
 import useStore from "@/store/userStore";
 import parse, { domToReact, Element, DOMNode, Text } from "html-react-parser";
+import highlighter from "@/lib/highlighter";
 import { useShallow } from "zustand/shallow";
 import { supabase } from "@/supabase/supabase";
 
@@ -91,6 +63,8 @@ export default function TypingSection({
   const modalOpen = useAuthStore((state) => state.modalOpen);
   const modalOpenRef = useRef(modalOpen);
 
+  const textRef = useRef<ReactElement>(null);
+
   const keyPressedRef = useRef("");
   const lineNumRef = useRef(0);
   const wordIndexRef = useRef(0);
@@ -106,6 +80,70 @@ export default function TypingSection({
     if (n == 0) return 0;
     return Math.floor(Math.random() * n + 1);
   };
+
+  async function printThing() {
+    let text = `export default {
+  data() {
+    return {
+      users: [],
+      isLoading: false,
+      searchTerm: ''
+    }
+  },
+  methods: {
+    async fetchUsers() {
+      this.isLoading = true
+      try {
+        const response = await fetch('/api/users')
+        this.users = await response.json()
+      } catch (error) {
+        console.error('Failed to fetch users:', error)
+      } finally {
+        this.isLoading = false
+      }
+    },
+    addUser(newUser) {
+      this.users.push({
+        id: Date.now(),
+        ...newUser
+      })
+    },
+    removeUser(userId) {
+      const index = this.users.findIndex(user => user.id === userId)
+      if (index !== -1) {
+        this.users.splice(index, 1)
+      }
+    },
+    filterUsers() {
+      return this.users.filter(user =>
+        user.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+      )
+    }
+  },
+  computed: {
+    activeUsers() {
+      return this.users.filter(user => user.active)
+    },
+    userCount() {
+      return this.users.length
+    }
+  },
+  mounted() {
+    this.fetchUsers()
+  }
+}`;
+
+    const t = await highlighter.codeToHtml(text, {
+      lang: "jsx",
+      theme: "dark-plus",
+    });
+    console.log("test");
+    console.log(t);
+    const p = parse(t);
+    if (React.isValidElement(p)) {
+      textRef.current = p;
+    }
+  }
 
   useEffect(() => {
     const focusText = () => {
@@ -143,6 +181,7 @@ export default function TypingSection({
       }
     };
 
+    printThing();
     document.addEventListener("keydown", handleKeydown);
     inputRef.current?.addEventListener("keydown", preventSpaceKeyDefault);
     return () => {
@@ -520,6 +559,7 @@ export default function TypingSection({
           wordIndex={wordIndex}
           spacesArray={spacesArray}
         />
+        {textRef.current}
         <input
           maxLength={100}
           type="text"
