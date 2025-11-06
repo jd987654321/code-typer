@@ -81,6 +81,35 @@ export default function TypingSection({
     return Math.floor(Math.random() * n + 1);
   };
 
+  function splitColorArrayTo3D(flatColorArray: string[]): string[][][] {
+    //we will pretty much just load up words
+    let result: string[][][] = [];
+    let currentLine: string[][] = [];
+    let currentWord: string[] = [];
+
+    for (const charColor of flatColorArray) {
+      if (charColor === "newline") {
+        if (currentWord.length > 0) {
+          currentLine.push(currentWord);
+          currentWord = [];
+        }
+        if (currentLine.length > 0) {
+          result.push(currentLine);
+          currentLine = [];
+        }
+      } else if (charColor === "space") {
+        if (currentWord.length > 0) {
+          currentLine.push(currentWord);
+          currentWord = [];
+        }
+      } else {
+        currentWord.push(charColor);
+      }
+    }
+
+    return result;
+  }
+
   async function printThing() {
     let text = `export default {
   data() {
@@ -133,16 +162,42 @@ export default function TypingSection({
   }
 }`;
 
-    const t = await highlighter.codeToHtml(text, {
+    const t = highlighter.codeToHtml(text, {
       lang: "jsx",
       theme: "dark-plus",
     });
-    console.log("test");
-    console.log(t);
+    //console.log("test");
+    //console.log(t);
     const p = parse(t);
     if (React.isValidElement(p)) {
       textRef.current = p;
     }
+
+    const flatColorArray: string[] = [];
+
+    const tokens = highlighter.codeToTokens(text, {
+      lang: "jsx",
+      theme: "dark-plus",
+    });
+    tokens.tokens.map((line, index) => {
+      //console.log("line");
+      line.forEach((token) => {
+        //console.log(`  token: "` + token.content + `" ` + token.color);
+        for (let i = 0; i < token.content.length; i++) {
+          if (token.content[i] === " ") {
+            flatColorArray.push("space");
+          } else {
+            flatColorArray.push(token.color || "#D4D4D4");
+          }
+        }
+      });
+      //if (index < tokens.tokens.length - 1) {
+      flatColorArray.push("newline");
+      //}
+    });
+    console.log(splitColorArrayTo3D(flatColorArray));
+    console.log(text.split(""));
+    console.log(flatColorArray);
   }
 
   useEffect(() => {
@@ -553,12 +608,12 @@ export default function TypingSection({
   return (
     <>
       <div className="w-[90%] text-white bg-none font-vscodeText">
-        <RenderText
+        {/* <RenderText
           formattedTextArray={textArray}
           lineNum={lineNum}
           wordIndex={wordIndex}
           spacesArray={spacesArray}
-        />
+        /> */}
         {textRef.current}
         <input
           maxLength={100}
